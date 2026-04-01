@@ -2,14 +2,28 @@ let selectedPet = '';
 let horariosOcupados = [];
 let horarioSelecionado = "";
 
-// 👉 COLE SUA URL DO APPS SCRIPT AQUI
+// 👉 URL DO SEU APPS SCRIPT
 const API_URL = "https://script.google.com/macros/s/AKfycbwE8I4T1FtPBEt7VZ6jJ_06mRBuQPxSKMQE5USswJ2jvnEErhtN5oQAB3cdjiM788wDVw/exec";
+
+// --- NOVO: FUNÇÃO DE LOGIN ---
+function validarLogin() {
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+
+  // Validação simples: se houver algo escrito nos dois campos, ele entra
+  if (email !== "" && senha !== "") {
+    goTo('pet');
+  } else {
+    alert("Por favor, preencha o e-mail e a senha para entrar.");
+  }
+}
 
 function goTo(screen) {
   document.querySelectorAll('.screen')
     .forEach(el => el.classList.add('hidden'));
 
-  document.getElementById(screen).classList.remove('hidden');
+  const target = document.getElementById(screen);
+  if (target) target.classList.remove('hidden');
 
   if (screen === 'agendamento') {
     atualizarPet();
@@ -19,28 +33,34 @@ function goTo(screen) {
 
 function selectPet(name, el) {
   selectedPet = name;
-
   document.querySelectorAll('.pet-card')
-    .forEach(c => c.classList.remove('border-blue-500','border-2'));
+    .forEach(c => c.classList.remove('border-blue-500','border-2', 'bg-blue-50'));
 
-  el.classList.add('border-blue-500','border-2');
+  el.classList.add('border-blue-500','border-2', 'bg-blue-50');
 }
 
 function salvarPet() {
   const nome = document.getElementById('petNome').value;
   const raca = document.getElementById('petRaca').value;
 
-  selectedPet = nome + " (" + raca + ")";
-  goTo('pet');
+  if (nome) {
+    selectedPet = nome + (raca ? " (" + raca + ")" : "");
+    atualizarPet();
+    goTo('agendamento');
+  } else {
+    alert("Digite pelo menos o nome do pet.");
+  }
 }
 
 function atualizarPet() {
-  document.getElementById('petSelecionado').innerText = selectedPet;
+  const display = document.getElementById('petSelecionado');
+  if (display) display.innerText = selectedPet;
 }
 
 // 🔥 GERAR HORÁRIOS
 function gerarHorarios() {
   const container = document.getElementById('horarios');
+  if (!container) return;
   container.innerHTML = '';
 
   const horarios = [
@@ -53,26 +73,22 @@ function gerarHorarios() {
   horarios.forEach(hora => {
     const btn = document.createElement('button');
     btn.innerText = hora;
-
     const agendamento = data + " " + hora;
-
-    btn.className = "p-2 border rounded";
+    btn.className = "p-2 border rounded-xl transition-all";
 
     if (horariosOcupados.includes(agendamento)) {
       btn.disabled = true;
-      btn.classList.add("bg-gray-300");
+      btn.classList.add("bg-gray-200", "text-gray-400", "cursor-not-allowed");
     } else {
       btn.onclick = () => selecionarHorario(btn, hora);
     }
-
     container.appendChild(btn);
   });
 }
 
-// 🎯 SELECIONAR
+// 🎯 SELECIONAR HORÁRIO
 function selecionarHorario(el, hora) {
   horarioSelecionado = hora;
-
   document.querySelectorAll('#horarios button')
     .forEach(b => b.classList.remove('bg-blue-500','text-white'));
 
@@ -84,12 +100,10 @@ async function carregarHorarios() {
   try {
     const res = await fetch(API_URL);
     const dados = await res.json();
-
     horariosOcupados = dados.map(d => d.data + " " + d.hora);
-
     gerarHorarios();
-
-  } catch {
+  } catch (e) {
+    console.error("Erro ao carregar horários:", e);
     gerarHorarios();
   }
 }
@@ -99,38 +113,51 @@ async function finalizar() {
   const date = document.getElementById('date').value;
 
   if (!date || !horarioSelecionado || !selectedPet) {
-    alert("Preencha tudo!");
+    alert("Preencha tudo (Pet, Data e Hora)!");
     return;
   }
 
   const agendamento = date + " " + horarioSelecionado;
 
   if (horariosOcupados.includes(agendamento)) {
-    alert("Horário ocupado!");
+    alert("Este horário acabou de ser ocupado!");
     return;
   }
 
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      pet: selectedPet,
-      servico: "Banho",
-      data: date,
-      hora: horarioSelecionado
-    })
-  });
+  // Feedback de carregamento
+  const btnFinalizar = document.querySelector('button[onclick="finalizar()"]');
+  btnFinalizar.innerText = "Agendando...";
+  btnFinalizar.disabled = true;
 
-  document.getElementById('cPet').innerText = selectedPet;
-  document.getElementById('cDate').innerText = date;
-  document.getElementById('cTime').innerText = horarioSelecionado;
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors", // Necessário para evitar erro de CORS com Apps Script
+      body: JSON.stringify({
+        pet: selectedPet,
+        servico: "Banho",
+        data: date,
+        hora: horarioSelecionado
+      })
+    });
 
-  goTo('confirmacao');
+    document.getElementById('cPet').innerText = selectedPet;
+    document.getElementById('cDate').innerText = date;
+    document.getElementById('cTime').innerText = horarioSelecionado;
+    goTo('confirmacao');
+
+  } catch (e) {
+    alert("Erro ao salvar. Verifique sua conexão.");
+  } finally {
+    btnFinalizar.innerText = "Finalizar";
+    btnFinalizar.disabled = false;
+  }
 }
 
-// atualizar horários ao mudar data
+// Atualizar horários ao mudar data
 document.addEventListener("change", (e) => {
   if (e.target.id === "date") gerarHorarios();
 });
 
-// splash
-setTimeout(() => goTo('login'), 1500);
+// Splash (3 segundos)
+setTimeout(() => goTo('login'), 3000);
