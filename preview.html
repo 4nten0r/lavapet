@@ -17,12 +17,25 @@
   </div>
 
   <!-- Login -->
-  <div id="login" class="screen hidden p-6">
-    <h1 class="text-center text-3xl text-blue-600 mb-4">Lava Pet</h1>
-    <button onclick="goTo('pet')" class="w-full bg-blue-500 text-white py-3 rounded-lg">
-      Entrar →
-    </button>
+<div id="login" class="screen hidden p-6 flex flex-col items-center justify-center min-h-[600px]">
+  <div class="w-full bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+    <h1 class="text-center text-2xl font-bold text-blue-600 mb-2">Lava Pet</h1>
+    <p class="text-center text-gray-500 text-sm mb-8">O santuário digital para seu melhor amigo.</p>
+    
+    <div class="space-y-4">
+      <input type="email" id="email" placeholder="E-mail" 
+             class="w-full p-4 bg-gray-100 rounded-xl border-none focus:ring-2 focus:ring-blue-400 outline-none">
+      
+      <input type="password" id="senha" placeholder="Senha" 
+             class="w-full p-4 bg-gray-100 rounded-xl border-none focus:ring-2 focus:ring-blue-400 outline-none">
+      
+      <button onclick="validarLogin()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-medium transition-all shadow-lg shadow-blue-200">
+        Entrar →
+      </button>
+    </div>
   </div>
+</div>
+
 
   <!-- Pet -->
   <div id="pet" class="screen hidden p-6">
