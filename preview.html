@@ -4,37 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lava Pet</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
 <div class="w-full max-w-sm md:max-w-2xl lg:max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden">
 
-  <!-- Splash -->
-  <div id="splash" class="screen h-[600px] flex items-center justify-center bg-blue-700 text-white text-4xl">
+  <!-- Splash (Oculto para iniciar direto no Login) -->
+  <div id="splash" class="screen hidden h-[600px] flex items-center justify-center bg-blue-700 text-white text-4xl">
     lavapet
   </div>
 
-  <!-- Login -->
-<div id="login" class="screen hidden p-6 flex flex-col items-center justify-center min-h-[600px]">
-  <div class="w-full bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
-    <h1 class="text-center text-2xl font-bold text-blue-600 mb-2">Lava Pet</h1>
-    <p class="text-center text-gray-500 text-sm mb-8">O santuário digital para seu melhor amigo.</p>
-    
-    <div class="space-y-4">
-      <input type="email" id="email" placeholder="E-mail" 
-             class="w-full p-4 bg-gray-100 rounded-xl border-none focus:ring-2 focus:ring-blue-400 outline-none">
-      
-      <input type="password" id="senha" placeholder="Senha" 
-             class="w-full p-4 bg-gray-100 rounded-xl border-none focus:ring-2 focus:ring-blue-400 outline-none">
-      
-      <button onclick="validarLogin()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-medium transition-all shadow-lg shadow-blue-200">
-        Entrar →
-      </button>
+  <!-- Login (Removido 'hidden' para ser a primeira tela) -->
+  <div id="login" class="screen p-6 flex flex-col items-center justify-center min-h-[600px]">
+    <div class="w-full bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+      <h1 class="text-center text-2xl font-bold text-blue-600 mb-2">Lava Pet</h1>
+      <p class="text-center text-gray-500 text-sm mb-8">O santuário digital para seu melhor amigo.</p>
+
+      <div class="space-y-4">
+        <input type="email" id="email" placeholder="E-mail" 
+               class="w-full p-4 bg-gray-100 rounded-xl border-none focus:ring-2 focus:ring-blue-400 outline-none">
+
+        <input type="password" id="senha" placeholder="Senha" 
+               class="w-full p-4 bg-gray-100 rounded-xl border-none focus:ring-2 focus:ring-blue-400 outline-none">
+
+        <!-- BOTÃO ALTERADO: Agora chama goTo('pet') diretamente -->
+        <button onclick="goTo('pet')" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-medium transition-all shadow-lg shadow-blue-200">
+          Entrar →
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
 
   <!-- Pet -->
@@ -61,7 +62,7 @@
     <input id="petNome" placeholder="Nome" class="w-full mb-3 p-2 bg-gray-100 rounded">
     <input id="petRaca" placeholder="Raça" class="w-full mb-3 p-2 bg-gray-100 rounded">
 
-    <button onclick="salvarPet()" class="w-full bg-blue-500 text-white py-2 rounded">
+    <button onclick="goTo('pet')" class="w-full bg-blue-500 text-white py-2 rounded">
       Salvar
     </button>
   </div>
@@ -74,7 +75,7 @@
 
     <div id="horarios" class="grid grid-cols-4 gap-2 mt-4"></div>
 
-    <button onclick="finalizar()" class="mt-4 w-full bg-blue-500 text-white py-2 rounded">
+    <button onclick="goTo('confirmacao')" class="mt-4 w-full bg-blue-500 text-white py-2 rounded">
       Finalizar
     </button>
   </div>
