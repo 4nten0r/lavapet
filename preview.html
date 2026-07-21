@@ -3,84 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lava Pet</title>
+  <title>Lava Pet - Premium</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    /* Estilo para ocultar barras de rolagem e manter o visual de app */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center min-h-screen p-4">
 
-<div class="w-full max-w-sm md:max-w-md bg-white rounded-3xl shadow-xl overflow-hidden">
+<div class="w-full max-w-sm md:max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden relative min-h-[600px] flex flex-col">
 
   <!-- Splash Screen -->
-  <div id="splash" class="screen h-[600px] flex items-center justify-center bg-blue-700 text-white text-4xl font-bold tracking-tighter">
-    lavapet
+  <div id="splash" class="screen absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 text-white transition-opacity duration-500">
+    <div class="text-7xl mb-4 animate-bounce">🛁</div>
+    <h1 class="text-4xl font-bold tracking-tight">Lava Pet</h1>
+    <p class="mt-2 text-blue-200 font-light tracking-wide">Cuidado Premium</p>
   </div>
 
-  <!-- Login (Atualizado conforme a imagem) -->
-  <div id="login" class="screen hidden p-8 flex flex-col items-center justify-center min-h-[500px]">
-    <h1 class="text-2xl font-bold text-blue-600 mb-2">Lava Pet</h1>
-    <p class="text-gray-400 text-sm text-center mb-8">O santuário digital para seu melhor amigo.</p>
+  <!-- Login -->
+  <div id="login" class="screen hidden flex-1 p-8 flex flex-col items-center justify-center">
+    <div class="w-full text-center mb-10">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">Bem-vindo!</h1>
+      <p class="text-gray-500 text-sm">Identifique-se para agendar o melhor cuidado para seu amigo.</p>
+    </div>
     
-    <div class="w-full space-y-4">
-      <input type="email" id="email" placeholder="E-mail" 
-             class="w-full p-4 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-400 outline-none text-gray-600">
+    <div class="w-full space-y-5">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1 ml-1">Seu Nome</label>
+        <input type="text" id="tutorNome" placeholder="Ex: João Silva" 
+               class="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-indigo-400 focus:bg-white outline-none text-gray-700 transition-all">
+      </div>
       
-      <input type="password" id="senha" placeholder="Senha" 
-             class="w-full p-4 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-400 outline-none text-gray-600">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1 ml-1">WhatsApp / Telefone</label>
+        <input type="tel" id="tutorTelefone" placeholder="(00) 00000-0000" 
+               class="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-indigo-400 focus:bg-white outline-none text-gray-700 transition-all">
+      </div>
       
-      <button onclick="validarLogin()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100">
-        Entrar <span class="text-lg">→</span>
+      <button onclick="validarLogin()" class="w-full mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-2xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
+        Avançar <span class="text-lg">→</span>
       </button>
     </div>
   </div>
 
-  <!-- Pet -->
-  <div id="pet" class="screen hidden p-6">
-    <h2 class="text-xl font-bold mb-4 text-gray-700">Escolha o Pet</h2>
-    <div class="grid grid-cols-2 gap-3">
-      <div onclick="selectPet('Rex', this)" class="pet-card p-4 border rounded-2xl text-center cursor-pointer hover:bg-blue-50 transition-colors">
-        🐶 Rex
+  <!-- Cadastro do Pet e Serviço -->
+  <div id="novoPet" class="screen hidden flex-1 p-8 flex flex-col justify-center">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Dados do Pet</h2>
+    
+    <div class="space-y-4">
+      <input id="petNome" placeholder="Nome do Pet (Ex: Bob)" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+      <input id="petRaca" placeholder="Raça (Opcional)" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+      
+      <div class="pt-2">
+        <label class="block text-sm font-medium text-gray-700 mb-2 ml-1">Qual serviço deseja?</label>
+        <select id="petServico" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none text-gray-700 appearance-none transition-all cursor-pointer">
+          <option value="" disabled selected>Selecione um serviço...</option>
+          <option value="Banho">🛁 Apenas Banho</option>
+          <option value="Tosa">✂️ Apenas Tosa</option>
+          <option value="Banho e Tosa">✨ Banho Completo + Tosa</option>
+        </select>
       </div>
-      <div onclick="goTo('novoPet')" class="p-4 border border-dashed rounded-2xl text-center cursor-pointer hover:bg-gray-50">
-        ➕ Novo
+
+      <button onclick="salvarPet()" class="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg shadow-indigo-200">
+        Escolher Horário
+      </button>
+    </div>
+  </div>
+
+  <!-- Agendamento (Data e Hora) -->
+  <div id="agendamento" class="screen hidden flex-1 p-8 flex flex-col">
+    <h2 class="text-2xl font-bold mb-2 text-gray-800">Agendamento</h2>
+    <p class="text-sm text-gray-500 mb-6">Escolha o melhor momento para o <strong id="displayPetNome" class="text-indigo-600"></strong>.</p>
+    
+    <div class="flex-1">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Selecione a Data</label>
+      <input id="date" type="date" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none text-gray-700 mb-6 transition-all cursor-pointer">
+      
+      <label class="block text-sm font-medium text-gray-700 mb-2">Horários Disponíveis</label>
+      <div id="horarios" class="grid grid-cols-3 gap-3 overflow-y-auto no-scrollbar max-h-48 pb-2">
+        <!-- Botões gerados via JS -->
       </div>
     </div>
-    <button onclick="goTo('agendamento')" class="mt-6 w-full bg-blue-500 text-white py-3 rounded-xl font-bold">
-      Continuar
-    </button>
-  </div>
 
-  <!-- Novo Pet -->
-  <div id="novoPet" class="screen hidden p-6">
-    <h2 class="text-xl font-bold mb-4 text-gray-700">Novo Pet</h2>
-    <input id="petNome" placeholder="Nome do Pet" class="w-full mb-3 p-3 bg-gray-50 rounded-xl outline-none">
-    <input id="petRaca" placeholder="Raça" class="w-full mb-3 p-3 bg-gray-50 rounded-xl outline-none">
-    <button onclick="salvarPet()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">
-      Salvar
-    </button>
-  </div>
-
-  <!-- Agendamento -->
-  <div id="agendamento" class="screen hidden p-6">
-    <p class="text-gray-600">Agendando para: <strong id="petSelecionado" class="text-blue-600"></strong></p>
-    <input id="date" type="date" class="w-full mt-4 p-3 bg-gray-50 rounded-xl outline-none">
-    <div id="horarios" class="grid grid-cols-3 gap-2 mt-4"></div>
-    <button onclick="finalizar()" class="mt-6 w-full bg-green-500 text-white py-3 rounded-xl font-bold">
-      Finalizar
+    <button onclick="finalizar()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-4 rounded-2xl font-semibold shadow-lg shadow-teal-200 mt-4 transition-all">
+      Confirmar Agendamento
     </button>
   </div>
 
   <!-- Confirmação -->
-  <div id="confirmacao" class="screen hidden p-10 text-center">
-    <div class="text-5xl mb-4">🎉</div>
-    <h2 class="text-2xl font-bold text-gray-800 mb-2">Agendado!</h2>
-    <div class="bg-blue-50 p-4 rounded-2xl text-left space-y-1 mb-6">
-      <p id="cPet" class="text-gray-700 font-medium"></p>
-      <p id="cDate" class="text-gray-600 text-sm"></p>
-      <p id="cTime" class="text-gray-600 text-sm"></p>
+  <div id="confirmacao" class="screen hidden flex-1 p-8 flex flex-col items-center justify-center text-center">
+    <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
+      <span class="text-5xl">✨</span>
     </div>
-    <button onclick="location.reload()" class="w-full bg-blue-100 text-blue-700 py-3 rounded-xl font-bold hover:bg-blue-200">
-      Voltar ao Início
+    <h2 class="text-3xl font-bold text-gray-800 mb-2">Tudo Certo!</h2>
+    <p class="text-gray-500 text-sm mb-8">O horário do seu pet está garantido.</p>
+    
+    <div class="w-full bg-gray-50 border border-gray-100 p-5 rounded-3xl text-left space-y-3 mb-8">
+      <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+        <span class="text-gray-500 text-sm">Pet</span>
+        <span id="cPet" class="font-semibold text-gray-800"></span>
+      </div>
+      <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+        <span class="text-gray-500 text-sm">Serviço</span>
+        <span id="cServico" class="font-semibold text-indigo-600"></span>
+      </div>
+      <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+        <span class="text-gray-500 text-sm">Data</span>
+        <span id="cDate" class="font-semibold text-gray-800"></span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-500 text-sm">Hora</span>
+        <span id="cTime" class="font-semibold text-gray-800"></span>
+      </div>
+    </div>
+    
+    <button onclick="location.reload()" class="w-full bg-indigo-50 text-indigo-700 py-4 rounded-2xl font-semibold hover:bg-indigo-100 transition-all">
+      Fazer Novo Agendamento
     </button>
   </div>
 
