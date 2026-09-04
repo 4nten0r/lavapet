@@ -2,133 +2,650 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lava Pet - Premium</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lava Pet - Cuidado Premium</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Poppins', sans-serif; }
-    /* Estilo para ocultar barras de rolagem e manter o visual de app */
+    :root {
+      --ice: #dceaff;
+      --ok: #2ee6a8;
+      --bad: #ff4d6a;
+      --brand: #6366f1;
+      --brand-glow: rgba(99, 102, 241, 0.4);
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      overflow-x: hidden;
+      background: radial-gradient(circle at 50% 20%, #e0e7ff 0%, #c7d2fe 45%, #93c5fd 100%);
+      transition: background 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.5s ease;
+    }
+
+    .font-heading {
+      font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    }
+
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Transição global de elementos para troca suave de tema */
+    body, #mainCard, header, input, .servico-card, button, #boxResumoAgendamento {
+      transition: background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
+                  border-color 0.45s ease, 
+                  color 0.45s ease, 
+                  box-shadow 0.45s ease;
+    }
+
+    /* ========================================= */
+    /*   ESTILOS DO MODO ESCURO (DARK THEME)     */
+    /* ========================================= */
+    body.dark-theme {
+      background: radial-gradient(circle at 50% 20%, #0f172a 0%, #090d16 50%, #020617 100%) !important;
+      color: #f8fafc !important;
+    }
+
+    body.dark-theme #mainCard {
+      background: rgba(15, 23, 42, 0.93) !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.06) !important;
+    }
+
+    body.dark-theme header {
+      background: rgba(15, 23, 42, 0.88) !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    body.dark-theme .text-slate-800 { color: #f8fafc !important; }
+    body.dark-theme .text-slate-900 { color: #ffffff !important; }
+    body.dark-theme .text-slate-700 { color: #e2e8f0 !important; }
+    body.dark-theme .text-slate-600 { color: #cbd5e1 !important; }
+    body.dark-theme .text-slate-500 { color: #94a3b8 !important; }
+    body.dark-theme .text-slate-400 { color: #64748b !important; }
+
+    body.dark-theme input {
+      background: rgba(30, 41, 59, 0.75) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+      color: #ffffff !important;
+    }
+    body.dark-theme input:focus {
+      background: rgba(30, 41, 59, 1) !important;
+      border-color: #818cf8 !important;
+    }
+
+    body.dark-theme .servico-card {
+      background: rgba(30, 41, 59, 0.65) !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    body.dark-theme .servico-card:hover {
+      border-color: rgba(99, 102, 241, 0.6) !important;
+    }
+
+    body.dark-theme #boxResumoAgendamento {
+      background: rgba(99, 102, 241, 0.15) !important;
+      border-color: rgba(99, 102, 241, 0.3) !important;
+    }
+
+    body.dark-theme .ticket-cutout {
+      background: linear-gradient(to bottom, #1e293b, #0f172a) !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body.dark-theme .ticket-cutout::before,
+    body.dark-theme .ticket-cutout::after {
+      background: #090d16 !important;
+    }
+
+    /* Bolhas de sabão animadas no fundo */
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.1) 60%, rgba(147, 197, 253, 0.3));
+      box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.6), 0 0 12px rgba(165, 180, 252, 0.3);
+      pointer-events: none;
+      animation: floatUp 9s infinite linear;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(110vh) translateX(0) scale(0.8); opacity: 0; }
+      10% { opacity: 0.7; }
+      50% { transform: translateY(50vh) translateX(15px) scale(1.05); }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-10vh) translateX(-10px) scale(1.15); opacity: 0; }
+    }
+
+    /* Shimmer contínuo nos botões principais */
+    .shimmer-btn {
+      position: relative;
+      overflow: hidden;
+    }
+    .shimmer-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        60deg,
+        transparent 25%,
+        rgba(255, 255, 255, 0.28) 50%,
+        transparent 75%
+      );
+      transform: rotate(25deg);
+      animation: shimmerPass 3.5s infinite;
+    }
+    @keyframes shimmerPass {
+      0% { transform: translateX(-100%) rotate(25deg); }
+      30%, 100% { transform: translateX(100%) rotate(25deg); }
+    }
+
+    /* Transições entre telas fluidas */
+    .screen {
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .screen.hidden-screen {
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      visibility: hidden;
+      transform: translateY(14px) scale(0.98);
+    }
+    .screen.active-screen {
+      opacity: 1;
+      pointer-events: auto;
+      position: relative;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Animação em cascata dos elementos internos da tela */
+    .active-screen .stagger-1 { animation: staggerIn 0.4s 0.04s both cubic-bezier(0.16, 1, 0.3, 1); }
+    .active-screen .stagger-2 { animation: staggerIn 0.4s 0.10s both cubic-bezier(0.16, 1, 0.3, 1); }
+    .active-screen .stagger-3 { animation: staggerIn 0.4s 0.18s both cubic-bezier(0.16, 1, 0.3, 1); }
+    .active-screen .stagger-4 { animation: staggerIn 0.4s 0.24s both cubic-bezier(0.16, 1, 0.3, 1); }
+
+    @keyframes staggerIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Anel Orbital Pontilhado (Contexto UI) */
+    .orbit {
+      position: relative;
+      width: 54px;
+      height: 54px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .orbit__ring {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .orbit__path {
+      stroke-dasharray: 2 7;
+      stroke-width: 1.5;
+      stroke: var(--ice);
+      fill: none;
+    }
+    .orbit__hub {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 12px var(--ok), 0 0 24px var(--ok);
+    }
+    .orbit__slot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #818cf8;
+      box-shadow: 0 0 10px #818cf8;
+    }
+
+    /* Luminária Suspensa Interativa & Interruptor */
+    .lamp-wire {
+      width: 2px;
+      height: 24px;
+      background: linear-gradient(to bottom, #475569, #94a3b8);
+    }
+    .lamp-head {
+      width: 54px;
+      height: 22px;
+      background: linear-gradient(135deg, #1e293b, #334155);
+      border-radius: 14px 14px 4px 4px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+      position: relative;
+      cursor: pointer;
+    }
+    .lamp-cord {
+      width: 2px;
+      height: 38px;
+      background: #94a3b8;
+      position: absolute;
+      right: 12px;
+      top: 15px;
+      transform-origin: top center;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      z-index: 40;
+    }
+    .lamp-cord:active {
+      transform: scaleY(1.4) translateY(3px);
+    }
+    .lamp-cord-handle {
+      width: 8px;
+      height: 8px;
+      background: #f8fafc;
+      border: 1.5px solid #64748b;
+      border-radius: 50%;
+      position: absolute;
+      bottom: -4px;
+      left: -3px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .lamp-glow {
+      position: absolute;
+      top: 14px;
+      width: 32px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fef08a;
+      filter: blur(3px);
+      box-shadow: 0 0 28px 8px rgba(254, 240, 138, 0.85);
+      transition: opacity 0.4s ease;
+    }
+    .lamp-beam {
+      position: absolute;
+      top: 36px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 420px;
+      height: 580px;
+      background: radial-gradient(ellipse at top, rgba(254, 240, 138, 0.28) 0%, rgba(254, 240, 138, 0.1) 45%, transparent 75%);
+      clip-path: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 10;
+    }
+
+    /* Micro-shake de erro */
+    @keyframes micro-shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    .shake-error {
+      animation: micro-shake 0.32s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    /* Feedback tátil elástico */
+    .card-touch {
+      transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+    .card-touch:active {
+      transform: scale(0.965);
+    }
+
+    /* Efeito de Ticket VIP na Confirmação */
+    .ticket-cutout {
+      position: relative;
+    }
+    .ticket-cutout::before, .ticket-cutout::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      background: #c7d2fe;
+      border-radius: 50%;
+      z-index: 20;
+      transition: background 0.5s ease;
+    }
+    .ticket-cutout::before { left: -9px; }
+    .ticket-cutout::after { right: -9px; }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
   </style>
 </head>
 
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-3 sm:p-5 relative overflow-hidden">
 
-<div class="w-full max-w-sm md:max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden relative min-h-[600px] flex flex-col">
+  <!-- Canvas de Confetes para Sucesso -->
+  <canvas id="confettiCanvas"></canvas>
 
-  <!-- Splash Screen -->
-  <div id="splash" class="screen absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 text-white transition-opacity duration-500">
-    <div class="text-7xl mb-4 animate-bounce">🛁</div>
-    <h1 class="text-4xl font-bold tracking-tight">Lava Pet</h1>
-    <p class="mt-2 text-blue-200 font-light tracking-wide">Cuidado Premium</p>
+  <!-- Bolhas de sabão dinâmicas flutuando suavemente -->
+  <div class="bubble" style="width: 45px; height: 45px; left: 8%; animation-delay: 0s; animation-duration: 9s;"></div>
+  <div class="bubble" style="width: 25px; height: 25px; left: 22%; animation-delay: 3s; animation-duration: 11s;"></div>
+  <div class="bubble" style="width: 60px; height: 60px; left: 75%; animation-delay: 1.5s; animation-duration: 8.5s;"></div>
+  <div class="bubble" style="width: 35px; height: 35px; left: 88%; animation-delay: 4.5s; animation-duration: 10s;"></div>
+
+  <!-- CONTAINER PRINCIPAL DO APP MOBILE-FIRST -->
+  <div id="mainCard" class="w-full max-w-sm sm:max-w-md bg-white/95 backdrop-blur-3xl rounded-[2.8rem] shadow-[0_25px_65px_rgba(0,0,0,0.15),0_0_0_1px_rgba(255,255,255,0.4)] overflow-hidden relative min-h-[660px] flex flex-col border border-white/40">
+
+    <!-- CABEÇALHO ELEGANTE & BADGE STATUS -->
+    <header class="px-7 pt-5 pb-3 flex items-center justify-between border-b border-slate-100/90 z-40 bg-white/80 backdrop-blur-md">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-500/30">
+          🛁
+        </div>
+        <div>
+          <span class="font-heading font-extrabold tracking-tight text-slate-800 text-base leading-none block">Lava Pet</span>
+          <span class="text-[9px] font-bold text-indigo-500 tracking-wider uppercase">Cuidado Premium</span>
+        </div>
+      </div>
+
+      <!-- Badge Pulsante de Modo Claro / Escuro com dica -->
+      <div class="flex items-center gap-2">
+        <span id="badgeTema" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 transition-colors">
+          ☀️ Modo Claro
+        </span>
+      </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL DO FLUXO DO CLIENTE -->
+    <div class="flex-1 flex flex-col relative overflow-hidden">
+
+      <!-- LUMINÁRIA SUSPENSA INTERATIVA (INTERRUPTOR DE TEMA CLARO/ESCURO) -->
+      <div class="relative w-full flex flex-col items-center pt-0.5 z-30 group">
+        <div class="lamp-wire"></div>
+        <div class="lamp-head flex items-center justify-center card-touch" onclick="alternarLuzETema()" title="Clique na lâmpada para acender/apagar e alternar o Modo Claro / Escuro">
+          <div id="lampGlow" class="lamp-glow opacity-100"></div>
+          <!-- Cordinha com puxador interativo -->
+          <div class="lamp-cord" onclick="event.stopPropagation(); puxarCordinha();" title="Puxe a cordinha para alternar o Modo Claro / Escuro">
+            <div class="lamp-cord-handle"></div>
+          </div>
+        </div>
+        <!-- Cone de Luz projetado sobre o app -->
+        <div id="lampBeam" class="lamp-beam opacity-95"></div>
+
+        <!-- Dica sutil que surge no início -->
+        <span id="dicaLampada" class="absolute top-12 text-[10px] font-bold text-indigo-600/70 bg-indigo-50/90 px-2 py-0.5 rounded-full border border-indigo-100/60 pointer-events-none transition-opacity duration-700">
+          💡 Puxe a cordinha para alternar o Modo Escuro
+        </span>
+      </div>
+
+      <!-- INDICADOR DE PROGRESSO -->
+      <div id="progressBar" class="hidden px-8 pt-3 pb-1 w-full z-20">
+        <div class="flex items-center justify-between relative">
+          <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-slate-100 rounded-full -z-10"></div>
+          <div id="progressFill" class="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-indigo-500 to-violet-600 rounded-full -z-10 transition-all duration-500 w-0"></div>
+          
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-extrabold transition-all shadow-sm" id="step1">1</div>
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-extrabold transition-all bg-slate-100 text-slate-400" id="step2">2</div>
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-extrabold transition-all bg-slate-100 text-slate-400" id="step3">3</div>
+        </div>
+      </div>
+
+      <!-- TELAS DO FLUXO DO CLIENTE -->
+      <div class="flex-1 flex flex-col relative z-20">
+
+        <!-- 0. SPLASH SCREEN -->
+        <div id="splash" class="screen active-screen absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 text-white">
+          <div class="text-7xl mb-4 animate-bounce filter drop-shadow-lg">🛁</div>
+          <h1 class="font-heading text-4xl font-black tracking-tight">Lava Pet</h1>
+          <p class="mt-2 text-indigo-200 font-light tracking-wide text-xs uppercase letter-spacing-2">Estética e Conforto Animal</p>
+
+          <div class="mt-10 flex flex-col items-center gap-2">
+            <div class="orbit scale-90">
+              <svg class="orbit__ring" viewBox="0 0 100 100">
+                <circle class="orbit__path" cx="50" cy="50" r="42"/>
+              </svg>
+              <span class="orbit__hub"></span>
+              <span class="orbit__slot" id="splashSlot"></span>
+            </div>
+            <span class="text-[10px] text-indigo-300 font-mono tracking-wider">CARREGANDO EXPERIÊNCIA</span>
+          </div>
+        </div>
+
+        <!-- 1. IDENTIFICAÇÃO DO TUTOR -->
+        <div id="login" class="screen hidden-screen flex-1 p-7 flex flex-col justify-between">
+          
+          <div class="w-full text-center mt-1 stagger-1">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 text-2xl mb-2 shadow-inner">
+              👋
+            </div>
+            <h1 id="welcomeTitle" class="font-heading text-2xl font-black text-slate-800 tracking-tight">Seja bem-vindo!</h1>
+            <p id="welcomeDesc" class="text-slate-400 text-xs mt-0.5">Identifique-se para garantir o melhor horário do seu pet.</p>
+          </div>
+          
+          <div id="loginForm" class="w-full space-y-4 my-auto stagger-2">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1.5 ml-1">Seu Nome Completo</label>
+              <div class="relative">
+                <input type="text" id="tutorNome" placeholder="Ex: Rodrigo Mendes" 
+                       class="w-full p-4 pl-11 bg-slate-50/80 rounded-2xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 focus:bg-white outline-none text-slate-800 text-sm font-medium transition-all shadow-sm">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">👤</span>
+              </div>
+              <span id="errNome" class="text-[--bad] text-xs ml-1 mt-1 hidden font-bold">Por favor, preencha seu nome.</span>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1.5 ml-1">WhatsApp de Contato</label>
+              <div class="relative">
+                <input type="tel" id="tutorTelefone" placeholder="(00) 00000-0000" maxlength="15"
+                       class="w-full p-4 pl-11 bg-slate-50/80 rounded-2xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 focus:bg-white outline-none text-slate-800 text-sm font-medium transition-all shadow-sm">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">📱</span>
+              </div>
+              <span id="errTelefone" class="text-[--bad] text-xs ml-1 mt-1 hidden font-bold">Digite um telefone válido com DDD.</span>
+            </div>
+          </div>
+
+          <div class="w-full space-y-2 mt-4 stagger-3">
+            <button id="btnAvancarLogin" onclick="validarLogin()" class="shimmer-btn w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-4 rounded-2xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 card-touch">
+              <span>Continuar para o Pet</span>
+              <span class="text-base">→</span>
+            </button>
+            <button id="btnLogout" onclick="limparSessao()" class="w-full text-slate-400 text-xs hover:text-slate-600 transition-colors py-1 hidden">
+              Não é você? Trocar de tutor
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. DADOS DO PET & SERVIÇOS -->
+        <div id="novoPet" class="screen hidden-screen flex-1 p-7 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4 stagger-1">
+              <div class="flex items-center">
+                <button onclick="voltarPara('login')" class="p-2 -ml-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors card-touch">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <h2 class="font-heading text-xl font-black text-slate-800 ml-1">Quem vamos cuidar?</h2>
+              </div>
+              <span id="petMascote" class="text-2xl animate-bounce">🐶</span>
+            </div>
+            
+            <div class="space-y-3.5 stagger-2">
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1 ml-1">Nome do Pet</label>
+                  <input id="petNome" placeholder="Ex: Bob" oninput="reagirNomePet(this.value)" class="w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 focus:bg-white outline-none text-slate-800 text-xs font-semibold transition-all">
+                  <span id="errPetNome" class="text-[--bad] text-[10px] ml-1 mt-0.5 hidden font-bold">Nome do pet?</span>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1 ml-1">Raça (Opcional)</label>
+                  <input id="petRaca" placeholder="Ex: Golden" class="w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 focus:bg-white outline-none text-slate-800 text-xs font-semibold transition-all">
+                </div>
+              </div>
+              
+              <!-- Cards de Serviço -->
+              <div class="pt-1">
+                <label class="block text-xs font-bold text-slate-600 mb-2 ml-1 flex items-center justify-between">
+                  <span>Escolha o Serviço</span>
+                  <span class="text-[10px] text-indigo-500 font-semibold">Tudo incluso</span>
+                </label>
+                
+                <div class="space-y-2" id="servicosContainer">
+                  <div onclick="selecionarServico('Banho', 50, this)" class="servico-card card-touch p-3.5 border border-slate-200 rounded-2xl bg-white flex items-center justify-between cursor-pointer hover:border-indigo-300 relative overflow-hidden group">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
+                        🛁
+                      </div>
+                      <div>
+                        <p class="font-extrabold text-slate-800 text-xs">Banho Hidratante</p>
+                        <p class="text-slate-400 text-[10px]">Shampoo neutro + secagem e escovação</p>
+                      </div>
+                    </div>
+                    <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">R$ 50</span>
+                  </div>
+
+                  <div onclick="selecionarServico('Tosa', 60, this)" class="servico-card card-touch p-3.5 border border-slate-200 rounded-2xl bg-white flex items-center justify-between cursor-pointer hover:border-indigo-300 relative overflow-hidden group">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
+                        ✂️
+                      </div>
+                      <div>
+                        <p class="font-extrabold text-slate-800 text-xs">Tosa Higiênica ou Geral</p>
+                        <p class="text-slate-400 text-[10px]">Corte das patas, orelhas e unhas</p>
+                      </div>
+                    </div>
+                    <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">R$ 60</span>
+                  </div>
+
+                  <div onclick="selecionarServico('Banho e Tosa', 90, this)" class="servico-card card-touch p-3.5 border-2 border-indigo-600 rounded-2xl bg-indigo-50/70 ring-2 ring-indigo-600/30 flex items-center justify-between cursor-pointer relative overflow-hidden group shadow-sm">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md shadow-indigo-500/30 group-hover:scale-110 transition-transform">
+                        ✨
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-1.5">
+                          <p class="font-extrabold text-slate-900 text-xs">Combo Banho + Tosa</p>
+                          <span class="text-[9px] font-extrabold bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-1.5 py-0.2 rounded-full uppercase tracking-tighter">VIP</span>
+                        </div>
+                        <p class="text-slate-500 text-[10px]">Tratamento completo com perfume e brinde</p>
+                      </div>
+                    </div>
+                    <span class="text-xs font-black text-white bg-indigo-600 px-2.5 py-1 rounded-full shadow-sm">R$ 90</span>
+                  </div>
+                </div>
+                <span id="errPetServico" class="text-[--bad] text-[10px] ml-1 mt-1 hidden font-bold">Por favor, escolha um dos serviços.</span>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="salvarPet()" class="shimmer-btn w-full mt-4 bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 text-white py-4 rounded-2xl font-extrabold text-sm shadow-lg shadow-indigo-600/30 hover:from-indigo-700 hover:to-violet-700 transition-all card-touch stagger-3">
+            Escolher Data e Horário →
+          </button>
+        </div>
+
+        <!-- 3. DATA & HORÁRIOS -->
+        <div id="agendamento" class="screen hidden-screen flex-1 p-7 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2 stagger-1">
+              <div class="flex items-center">
+                <button onclick="voltarPara('novoPet')" class="p-2 -ml-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors card-touch">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <h2 class="font-heading text-xl font-black text-slate-800 ml-1">Data & Horário</h2>
+              </div>
+              <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600" id="chipPetSelecionado">🐾 Pet</span>
+            </div>
+            
+            <div class="mb-3 stagger-2">
+              <div class="flex items-center justify-between mb-1.5 ml-1">
+                <label class="text-xs font-bold text-slate-600">Escolha o Dia</label>
+                <input id="date" type="date" onchange="aoMudarDataManual(this.value)" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50/80 px-2 py-0.5 rounded-lg border border-indigo-100 outline-none cursor-pointer">
+              </div>
+              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1" id="pilulasDiasContainer">
+                <!-- Pílulas geradas no JS -->
+              </div>
+            </div>
+            
+            <div class="mt-2 stagger-3">
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-bold text-slate-600 ml-1">Horários Disponíveis</label>
+                <span class="text-[10px] text-slate-400 flex items-center gap-1.5 font-medium">
+                  <span class="w-2 h-2 rounded-full bg-[--ok]"></span> Livre
+                  <span class="w-2 h-2 rounded-full bg-slate-300 ml-1"></span> Ocupado
+                </span>
+              </div>
+
+              <div id="horarios" class="grid grid-cols-3 gap-2 overflow-y-auto no-scrollbar max-h-44 pb-1">
+                <!-- Botões gerados instantaneamente -->
+              </div>
+              
+              <div id="boxResumoAgendamento" class="mt-2 p-2.5 rounded-xl bg-indigo-50/60 border border-indigo-100 text-xs flex items-center justify-between">
+                <span class="text-slate-500 font-medium text-[11px]">Selecionado:</span>
+                <span id="txtResumoAgendamento" class="font-bold text-indigo-600 text-[11px]">Escolha um horário acima</span>
+              </div>
+
+              <span id="errHorario" class="text-[--bad] text-xs hidden mt-1 font-bold">Por favor, clique em um dos horários disponíveis acima.</span>
+            </div>
+          </div>
+
+          <button id="btnConfirmarAgendamento" onclick="finalizar()" class="shimmer-btn w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-black text-sm py-4 rounded-2xl shadow-lg shadow-emerald-500/25 mt-3 transition-all card-touch flex items-center justify-center gap-2 stagger-4">
+            <span>Confirmar Agendamento</span>
+            <span>✨</span>
+          </button>
+        </div>
+
+        <!-- 4. CONFIRMAÇÃO EM TICKET VIP -->
+        <div id="confirmacao" class="screen hidden-screen flex-1 p-6 flex flex-col items-center justify-between text-center">
+          
+          <div class="w-full mt-2">
+            <div class="w-16 h-16 bg-emerald-50 border border-emerald-100 rounded-3xl flex items-center justify-center mx-auto mb-3 shadow-inner scale-in">
+              <span class="text-3xl animate-pulse">🎉</span>
+            </div>
+            <h2 class="font-heading text-2xl font-black text-slate-800 tracking-tight">Horário Garantido!</h2>
+            <p class="text-slate-400 text-xs mt-0.5">O atendimento do seu pet já está na nossa agenda oficial.</p>
+          </div>
+          
+          <div class="w-full bg-gradient-to-b from-slate-50 to-indigo-50/40 border border-slate-200/90 p-5 rounded-3xl text-left space-y-2.5 my-auto shadow-md relative overflow-hidden ticket-cutout">
+            <div class="flex items-center justify-between border-b border-dashed border-slate-300 pb-2.5">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-indigo-500 tracking-wider">COMPROVANTE DIGITAL</span>
+                <p class="font-heading font-extrabold text-slate-800 text-base" id="cPet"></p>
+              </div>
+              <span class="text-xs font-mono font-bold px-2 py-1 rounded-lg bg-indigo-100 text-indigo-700" id="cCodigo">#PET-000</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+              <div>
+                <span class="text-slate-400 text-[10px] block">Serviço Especial</span>
+                <span id="cServico" class="font-extrabold text-indigo-600"></span>
+              </div>
+              <div class="text-right">
+                <span class="text-slate-400 text-[10px] block">Data & Hora</span>
+                <span id="cDataHora" class="font-extrabold text-slate-800"></span>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500">
+              <span>Status: <strong class="text-emerald-600 font-bold">✓ Confirmado</strong></span>
+              <span class="text-[10px] text-slate-400">Lava Pet Spa 🛁</span>
+            </div>
+          </div>
+          
+          <div class="w-full space-y-2">
+            <button onclick="compartilharWhatsApp()" class="w-full bg-emerald-50 text-emerald-700 py-3 rounded-2xl font-bold text-xs hover:bg-emerald-100 transition-all card-touch flex items-center justify-center gap-1.5 border border-emerald-200">
+              <span>💬 Salvar Comprovante no WhatsApp</span>
+            </button>
+            <button onclick="novoAgendamentoCliente()" class="w-full bg-slate-100 text-slate-600 py-3 rounded-2xl font-bold text-xs hover:bg-slate-200 transition-all card-touch">
+              Fazer Outro Agendamento
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
-  <!-- Login -->
-  <div id="login" class="screen hidden flex-1 p-8 flex flex-col items-center justify-center">
-    <div class="w-full text-center mb-10">
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">Bem-vindo!</h1>
-      <p class="text-gray-500 text-sm">Identifique-se para agendar o melhor cuidado para seu amigo.</p>
-    </div>
-    
-    <div class="w-full space-y-5">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1 ml-1">Seu Nome</label>
-        <input type="text" id="tutorNome" placeholder="Ex: João Silva" 
-               class="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-indigo-400 focus:bg-white outline-none text-gray-700 transition-all">
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1 ml-1">WhatsApp / Telefone</label>
-        <input type="tel" id="tutorTelefone" placeholder="(00) 00000-0000" 
-               class="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-indigo-400 focus:bg-white outline-none text-gray-700 transition-all">
-      </div>
-      
-      <button onclick="validarLogin()" class="w-full mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-2xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
-        Avançar <span class="text-lg">→</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Cadastro do Pet e Serviço -->
-  <div id="novoPet" class="screen hidden flex-1 p-8 flex flex-col justify-center">
-    <h2 class="text-2xl font-bold mb-6 text-gray-800">Dados do Pet</h2>
-    
-    <div class="space-y-4">
-      <input id="petNome" placeholder="Nome do Pet (Ex: Bob)" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
-      <input id="petRaca" placeholder="Raça (Opcional)" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
-      
-      <div class="pt-2">
-        <label class="block text-sm font-medium text-gray-700 mb-2 ml-1">Qual serviço deseja?</label>
-        <select id="petServico" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none text-gray-700 appearance-none transition-all cursor-pointer">
-          <option value="" disabled selected>Selecione um serviço...</option>
-          <option value="Banho">🛁 Apenas Banho</option>
-          <option value="Tosa">✂️ Apenas Tosa</option>
-          <option value="Banho e Tosa">✨ Banho Completo + Tosa</option>
-        </select>
-      </div>
-
-      <button onclick="salvarPet()" class="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg shadow-indigo-200">
-        Escolher Horário
-      </button>
-    </div>
-  </div>
-
-  <!-- Agendamento (Data e Hora) -->
-  <div id="agendamento" class="screen hidden flex-1 p-8 flex flex-col">
-    <h2 class="text-2xl font-bold mb-2 text-gray-800">Agendamento</h2>
-    <p class="text-sm text-gray-500 mb-6">Escolha o melhor momento para o <strong id="displayPetNome" class="text-indigo-600"></strong>.</p>
-    
-    <div class="flex-1">
-      <label class="block text-sm font-medium text-gray-700 mb-2">Selecione a Data</label>
-      <input id="date" type="date" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none text-gray-700 mb-6 transition-all cursor-pointer">
-      
-      <label class="block text-sm font-medium text-gray-700 mb-2">Horários Disponíveis</label>
-      <div id="horarios" class="grid grid-cols-3 gap-3 overflow-y-auto no-scrollbar max-h-48 pb-2">
-        <!-- Botões gerados via JS -->
-      </div>
-    </div>
-
-    <button onclick="finalizar()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-4 rounded-2xl font-semibold shadow-lg shadow-teal-200 mt-4 transition-all">
-      Confirmar Agendamento
-    </button>
-  </div>
-
-  <!-- Confirmação -->
-  <div id="confirmacao" class="screen hidden flex-1 p-8 flex flex-col items-center justify-center text-center">
-    <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
-      <span class="text-5xl">✨</span>
-    </div>
-    <h2 class="text-3xl font-bold text-gray-800 mb-2">Tudo Certo!</h2>
-    <p class="text-gray-500 text-sm mb-8">O horário do seu pet está garantido.</p>
-    
-    <div class="w-full bg-gray-50 border border-gray-100 p-5 rounded-3xl text-left space-y-3 mb-8">
-      <div class="flex justify-between items-center border-b border-gray-200 pb-2">
-        <span class="text-gray-500 text-sm">Pet</span>
-        <span id="cPet" class="font-semibold text-gray-800"></span>
-      </div>
-      <div class="flex justify-between items-center border-b border-gray-200 pb-2">
-        <span class="text-gray-500 text-sm">Serviço</span>
-        <span id="cServico" class="font-semibold text-indigo-600"></span>
-      </div>
-      <div class="flex justify-between items-center border-b border-gray-200 pb-2">
-        <span class="text-gray-500 text-sm">Data</span>
-        <span id="cDate" class="font-semibold text-gray-800"></span>
-      </div>
-      <div class="flex justify-between items-center">
-        <span class="text-gray-500 text-sm">Hora</span>
-        <span id="cTime" class="font-semibold text-gray-800"></span>
-      </div>
-    </div>
-    
-    <button onclick="location.reload()" class="w-full bg-indigo-50 text-indigo-700 py-4 rounded-2xl font-semibold hover:bg-indigo-100 transition-all">
-      Fazer Novo Agendamento
-    </button>
-  </div>
-
-</div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

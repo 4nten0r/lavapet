@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lava Pet - Portal do Gestor & Agenda</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ice: #dceaff;
+      --ok: #2ee6a8;
+      --bad: #ff4d6a;
+      --hub-glow: rgba(46, 230, 168, 0.4);
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0b0f19;
+      color: #f8fafc;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .glass-panel {
+      background: rgba(18, 24, 38, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #f8fafc;
+    }
+    .glass-input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .card-touch {
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .card-touch:active {
+      transform: scale(0.98);
+    }
+
+    /* Animação de Órbita para o Dashboard */
+    .orbit-mini {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .orbit-mini__ring {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .orbit-mini__path {
+      stroke-dasharray: 2 6;
+      stroke-width: 1.5;
+      stroke: var(--ice);
+      fill: none;
+    }
+    .orbit-mini__hub {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 8px var(--ok);
+    }
+    .orbit-mini__slot {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #818cf8;
+      box-shadow: 0 0 6px #818cf8;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- ============================================== -->
+  <!--        1. TELA DE AUTENTICAÇÃO / LOGIN         -->
+  <!-- ============================================== -->
+  <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-[#0d1322] to-slate-950">
+    <div class="w-full max-w-md glass-panel p-8 rounded-3xl shadow-2xl relative overflow-hidden border border-white/10">
+      
+      <!-- Efeito sutil de luz de fundo -->
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="text-center mb-8 relative z-10">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-3xl shadow-lg shadow-indigo-500/25 mb-4">
+          🛁
+        </div>
+        <h1 class="text-2xl font-extrabold text-white tracking-tight">Portal do Gestor</h1>
+        <p class="text-slate-400 text-xs mt-1">Acesso exclusivo para o proprietário do Lava Pet</p>
+      </div>
+
+      <form id="formLogin" onsubmit="realizarLogin(event)" class="space-y-4 relative z-10">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 ml-1">E-mail Administrativo</label>
+          <input type="email" id="adminEmail" value="admin@lavapet.com" required placeholder="admin@lavapet.com" 
+                 class="w-full p-3.5 glass-input rounded-2xl outline-none text-sm transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 ml-1">Senha de Acesso</label>
+          <div class="relative">
+            <input type="password" id="adminSenha" value="admin123" required placeholder="••••••••" 
+                   class="w-full p-3.5 glass-input rounded-2xl outline-none text-sm pr-12 transition-all">
+            <button type="button" onclick="alternarVisibilidadeSenha()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-xs p-1">
+              <span id="txtIconEye">👁️</span>
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1.5 ml-1">Credencial inicial de fábrica: <code class="text-indigo-400">admin@lavapet.com</code> / <code class="text-indigo-400">admin123</code></p>
+        </div>
+
+        <div id="msgErroLogin" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[--bad] text-xs font-semibold text-center">
+          Credenciais incorretas. Verifique e tente novamente.
+        </div>
+
+        <button type="submit" id="btnEntrarAdmin" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-2xl text-sm shadow-lg shadow-indigo-600/30 transition-all card-touch flex items-center justify-center gap-2 mt-2">
+          <span>Entrar no Painel</span>
+          <span>→</span>
+        </button>
+      </form>
+
+      <div class="mt-6 pt-6 border-t border-white/5 text-center text-xs text-slate-500">
+        <span>Sistema Seguro com Criptografia SHA-256</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!--     2. DASHBOARD DO DONO (AUTENTICADO)         -->
+  <!-- ============================================== -->
+  <div id="dashboardScreen" class="hidden flex-1 flex flex-col min-h-screen">
+    
+    <!-- BARRA SUPERIOR (HEADER) -->
+    <header class="glass-panel sticky top-0 z-40 border-b border-white/5 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">🛁</span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold text-white tracking-tight">Lava Pet</h1>
+            <span class="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">PAINEL DO DONO</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Gestão de agendamentos reais em tempo real</p>
+        </div>
+      </div>
+
+      <!-- Controles Rápidos do Cabeçalho -->
+      <div class="flex items-center gap-3">
+        <!-- Relógio em tempo real -->
+        <div class="hidden md:flex flex-col text-right">
+          <span id="relogioTopo" class="text-xs font-mono font-bold text-white">12:00:00</span>
+          <span id="dataTopo" class="text-[10px] text-slate-400">Carregando...</span>
+        </div>
+
+        <!-- Botão de Notificações / Alertas -->
+        <button id="btnAlertaDono" onclick="alternarNotificacoesDono()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-white/10 transition-all card-touch">
+          <span id="iconeSino">🔔</span>
+          <span id="textoAlertaSino" class="hidden sm:inline">Ativar Alertas</span>
+        </button>
+
+        <!-- Perfil e Logout -->
+        <div class="flex items-center gap-2 pl-2 border-l border-white/10">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-emerald-400 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+            D
+          </div>
+          <button onclick="realizarLogout()" class="text-slate-400 hover:text-[--bad] p-1.5 rounded-lg hover:bg-white/5 transition-colors card-touch" title="Sair do Painel">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL DO DASHBOARD -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
+
+      <!-- CARDS DE MÉTRICAS DO DIA -->
+      <section class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
+        
+        <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">Agendados Hoje</span>
+            <span class="text-lg">📅</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="metricaTotal" class="text-2xl lg:text-3xl font-extrabold text-white">0</span>
+            <span class="text-xs text-slate-400">pets</span>
+          </div>
+        </div>
+
+        <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">Faturamento Previsto</span>
+            <span class="text-lg">💰</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="metricaReceita" class="text-2xl lg:text-3xl font-extrabold text-[--ok]">R$ 0</span>
+          </div>
+        </div>
+
+        <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">Concluídos</span>
+            <span class="text-lg">✨</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="metricaConcluidos" class="text-2xl lg:text-3xl font-extrabold text-indigo-400">0</span>
+            <span class="text-xs text-slate-400">atendimentos</span>
+          </div>
+        </div>
+
+        <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">Próximo Pet</span>
+            <span class="text-lg">⏰</span>
+          </div>
+          <div class="truncate">
+            <span id="metricaProximo" class="text-base lg:text-lg font-bold text-slate-200">Nenhum</span>
+            <p id="metricaProximoHora" class="text-xs text-slate-400 mt-0.5">Sem horário imediato</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- BARRA DE FILTROS & AÇÕES DA AGENDA -->
+      <section class="glass-panel p-4 rounded-2xl border border-white/5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        
+        <!-- Seleção de Data & Atalhos -->
+        <div class="flex items-center gap-2">
+          <input type="date" id="filtroDataAdmin" class="glass-input p-2.5 rounded-xl text-xs font-semibold outline-none cursor-pointer">
+          <button onclick="definirDataFiltroHoje()" class="px-3 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 text-xs font-bold border border-indigo-500/30 card-touch">
+            Hoje
+          </button>
+          <button onclick="definirDataFiltroAmanha()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/5 card-touch">
+            Amanhã
+          </button>
+          <button onclick="carregarAgendamentosReais()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 card-touch" title="Sincronizar">
+            🔄
+          </button>
+        </div>
+
+        <!-- Busca e Novo Agendamento -->
+        <div class="flex items-center gap-2">
+          <!-- Campo de Pesquisa -->
+          <div class="relative flex-1 md:w-60">
+            <input type="text" id="buscaTexto" oninput="renderizarListaFiltrada()" placeholder="Buscar pet ou tutor..." 
+                   class="w-full glass-input p-2.5 pl-8 rounded-xl text-xs outline-none">
+            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">🔍</span>
+          </div>
+
+          <!-- Botão Novo Agendamento Manual Balcão -->
+          <button onclick="abrirModalManual()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs shadow-md shadow-emerald-500/20 card-touch whitespace-nowrap flex items-center gap-1.5">
+            <span>+</span> Novo Agendamento
+          </button>
+        </div>
+
+      </section>
+
+      <!-- LISTA DE AGENDAMENTOS REAIS -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="text-sm font-bold text-slate-300 tracking-wide uppercase flex items-center gap-2">
+            <span>Fluxo da Agenda Real</span>
+            <span id="badgeContagem" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">0</span>
+          </h2>
+          
+          <!-- Filtro de Status -->
+          <div class="flex items-center gap-1 text-xs">
+            <button onclick="filtrarStatus('todos', this)" class="btn-filtro-status px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-bold card-touch">Todos</button>
+            <button onclick="filtrarStatus('Confirmado', this)" class="btn-filtro-status px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 font-semibold card-touch">Confirmados</button>
+            <button onclick="filtrarStatus('Em Atendimento', this)" class="btn-filtro-status px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 font-semibold card-touch">Em Atendimento</button>
+            <button onclick="filtrarStatus('Concluído', this)" class="btn-filtro-status px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 font-semibold card-touch">Concluídos</button>
+          </div>
+        </div>
+
+        <!-- Grade/Lista de Agendamentos Reais -->
+        <div id="containerAgendamentos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          <!-- Inserido dinamicamente via admin.js -->
+        </div>
+
+        <!-- Estado Vazio (Sem Dados Mockados) -->
+        <div id="estadoVazio" class="hidden glass-panel p-12 rounded-3xl border border-white/5 text-center my-6">
+          <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 text-3xl flex items-center justify-center mx-auto mb-3">
+            📅
+          </div>
+          <h3 class="text-base font-bold text-white">Nenhum agendamento real nesta data</h3>
+          <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">Quando os clientes realizarem agendamentos pelo site, eles aparecerão aqui instantaneamente.</p>
+          <div class="mt-4 flex items-center justify-center gap-2">
+            <button onclick="abrirModalManual()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 card-touch">
+              Criar Agendamento Manual
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- ============================================== -->
+  <!--   MODAL: NOVO AGENDAMENTO MANUAL / BALCÃO      -->
+  <!-- ============================================== -->
+  <div id="modalManual" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div class="glass-panel p-6 rounded-3xl max-w-md w-full border border-white/10 shadow-2xl relative">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span>➕</span> Novo Agendamento Balcão
+        </h3>
+        <button onclick="fecharModalManual()" class="text-slate-400 hover:text-white p-1 rounded-lg text-sm">✕</button>
+      </div>
+
+      <form id="formManual" onsubmit="salvarAgendamentoManual(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Nome do Pet</label>
+          <input type="text" id="mPetNome" required placeholder="Ex: Bob" class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Raça (Opcional)</label>
+          <input type="text" id="mPetRaca" placeholder="Ex: Poodle" class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Nome do Tutor</label>
+            <input type="text" id="mTutorNome" required placeholder="Ex: Ana Silva" class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">WhatsApp</label>
+            <input type="tel" id="mTutorTelefone" required placeholder="(11) 90000-0000" class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Serviço</label>
+            <select id="mServico" class="w-full glass-input p-3 rounded-xl text-xs outline-none cursor-pointer bg-slate-900 text-white">
+              <option value="Banho" data-preco="50">Banho (R$ 50)</option>
+              <option value="Tosa" data-preco="60">Tosa (R$ 60)</option>
+              <option value="Banho e Tosa" data-preco="90">Banho e Tosa (R$ 90)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Horário</label>
+            <select id="mHora" class="w-full glass-input p-3 rounded-xl text-xs outline-none cursor-pointer bg-slate-900 text-white">
+              <option value="08:00">08:00</option>
+              <option value="09:00">09:00</option>
+              <option value="10:00">10:00</option>
+              <option value="11:00">11:00</option>
+              <option value="13:00">13:00</option>
+              <option value="14:00">14:00</option>
+              <option value="15:00">15:00</option>
+              <option value="16:00">16:00</option>
+              <option value="17:00">17:00</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Data</label>
+          <input type="date" id="mData" required class="w-full glass-input p-3 rounded-xl text-xs outline-none cursor-pointer">
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button type="button" onclick="fecharModalManual()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-md card-touch">Gravar Agendamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
+
