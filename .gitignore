@@ -4,7 +4,7 @@ doce-afeto-main/
 doce-afeto*/
 
 # Artefatos locais de deploy/verificação
-deploy-log.txt
-deploy-github.cmd
+deploy-log*.txt
+deploy-github*.cmd
 check*.txt
 _site/
