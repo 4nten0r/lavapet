@@ -1,0 +1,10 @@
+# Projeto de referência (não faz parte do produto)
+doce-afeto/
+doce-afeto-main/
+doce-afeto*/
+
+# Artefatos locais de deploy/verificação
+deploy-log.txt
+deploy-github.cmd
+check*.txt
+_site/
