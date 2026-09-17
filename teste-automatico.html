@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Teste automático</title>
+</head>
+<body>
+  <pre id="out">Iniciando...</pre>
+  <script src="config.js"></script>
+  <script>
+    const out = document.getElementById('out');
+    const linhas = [];
+    function t(nome, cond) { linhas.push((cond ? 'PASS: ' : 'FAIL: ') + nome); }
+
+    try {
+      // Config default
+      const cfg = obterConfig();
+      t('config default carregada', cfg && cfg.nome === 'Lava Pet' && Array.isArray(cfg.servicos) && cfg.servicos.length === 3);
+
+      // Salvar e reabrir config
+      cfg.nome = 'Pet Bela';
+      cfg.pix.chave = '11999998888';
+      cfg.pix.sinal = 40;
+      cfg.configurado = true;
+      salvarConfig(cfg);
+      const cfg2 = obterConfig();
+      t('config persistida', cfg2.nome === 'Pet Bela' && cfg2.pix.chave === '11999998888' && cfg2.pix.sinal === 40);
+      t('merge de defaults', cfg2.templates && !!cfg2.templates.confirmacao);
+
+      // Data disponível / bloqueada
+      const amanha = new Date(Date.now() + 86400000);
+      const iso = amanha.toISOString().split('T')[0];
+      t('data futura disponível', dataDisponivel(iso, cfg2) === true);
+
+      const bloqueios = obterBloqueios();
+      bloqueios.datas.push(iso);
+      salvarBloqueios(bloqueios);
+      t('data bloqueada indisponível', dataDisponivel(iso, cfg2) === false);
+
+      // Horários livres
+      const livres = horariosLivres(iso, [{ data: iso, hora: '09:00', status: 'Confirmado' }], cfg2);
+      t('horário ocupado removido', livres.includes('09:00') === false && livres.includes('08:00') === true);
+
+      // Template
+      const msg = preencherTemplate('Ola {tutor}, {pet} - {servico} em {data} as {hora}. {empresa}', {
+        tutor: 'Ana', pet: 'Bob', servico: 'Banho', data: '01/02', hora: '10:00', empresa: 'Pet Bela'
+      });
+      t('template preenchido', msg === 'Ola Ana, Bob - Banho em 01/02 as 10:00. Pet Bela');
+
+      // Mascara telefone
+      t('mascara telefone', mascaraTelefone('11999998888') === '(11) 99999-8888');
+
+      // Formatador de data
+      t('formatar data br', formatarDataBr('2026-03-15') === '15/03/2026');
+    } catch (e) {
+      linhas.push('ERRO: ' + e.message);
+    }
+
+    out.innerText = linhas.join('\n');
+  </script>
+</body>
+</html>

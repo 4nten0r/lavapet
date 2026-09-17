@@ -84,6 +84,58 @@
       background: #818cf8;
       box-shadow: 0 0 6px #818cf8;
     }
+
+    :root {
+      --lavapet-wine: #84364c;
+      --lavapet-wine-dark: #67263a;
+      --lavapet-ink: #382b2d;
+      --lavapet-muted: #756563;
+      --lavapet-line: #e9ded8;
+      --lavapet-cream: #fcfaf7;
+      --lavapet-rose: #f2e5e3;
+    }
+
+    body {
+      color: var(--lavapet-ink) !important;
+      background: var(--lavapet-cream) !important;
+      background-image: radial-gradient(circle at 90% 0%, rgba(242, 229, 227, .9), transparent 30%), linear-gradient(135deg, #fcfaf7 0%, #f8eeeb 100%) !important;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, .78) !important;
+      border-color: var(--lavapet-line) !important;
+      box-shadow: 0 12px 30px rgba(92, 52, 55, .06);
+    }
+
+    header.glass-panel { background: rgba(252, 250, 247, .94) !important; }
+    header h1, main h2, main h3 { color: var(--lavapet-ink) !important; }
+    header p, main .text-slate-400, main .text-slate-500 { color: var(--lavapet-muted) !important; }
+    .glass-input { background: #fffaf7 !important; border-color: var(--lavapet-line) !important; color: var(--lavapet-ink) !important; }
+    .glass-input:focus { border-color: var(--lavapet-wine) !important; box-shadow: 0 0 0 3px rgba(132, 54, 76, .12) !important; }
+    .bg-indigo-600 { background-color: var(--lavapet-wine) !important; }
+    [class*="from-indigo-600"], [class*="from-emerald-500"] { background-image: none !important; background-color: var(--lavapet-wine) !important; }
+    [class*="to-violet-500"], [class*="to-violet-600"], [class*="to-teal-600"] { background-image: none !important; }
+    .text-indigo-300, .text-indigo-400, .text-indigo-500 { color: var(--lavapet-wine) !important; }
+    .bg-indigo-500\/20, .bg-indigo-500\/10 { background-color: var(--lavapet-rose) !important; }
+    .border-indigo-500\/30, .border-indigo-100 { border-color: #e4c9c8 !important; }
+    .bg-emerald-500, .bg-gradient-to-r.from-emerald-500 { background-color: var(--lavapet-wine) !important; }
+    .text-emerald-400, .text-emerald-500, .text-emerald-600 { color: #4c8b69 !important; }
+    .bg-slate-800, .bg-slate-800\/80, .bg-slate-900 { background-color: var(--lavapet-rose) !important; }
+    .text-slate-200, .text-slate-300 { color: var(--lavapet-ink) !important; }
+    .text-slate-950 { color: #fff !important; }
+    #authScreen { background: linear-gradient(135deg, #fcfaf7, #f2e5e3) !important; }
+    #authScreen .glass-panel { border-radius: 20px; }
+    #authScreen h1 { color: var(--lavapet-ink) !important; }
+    #authScreen label { color: var(--lavapet-ink) !important; }
+    #authScreen .text-slate-400, #authScreen .text-slate-500 { color: var(--lavapet-muted) !important; }
+    #modalManual { background: rgba(56, 43, 45, .42) !important; }
+
+    @media (max-width: 640px) {
+      main { padding: 18px !important; }
+      header.glass-panel { padding-inline: 18px !important; }
+      #authScreen .glass-panel { padding: 24px !important; }
+      #authScreen .rounded-2xl { border-radius: 14px; }
+    }
   </style>
 </head>
 
@@ -101,7 +153,7 @@
 
       <div class="text-center mb-8 relative z-10">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-3xl shadow-lg shadow-indigo-500/25 mb-4">
-          🛁
+          LP
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Portal do Gestor</h1>
         <p class="text-slate-400 text-xs mt-1">Acesso exclusivo para o proprietário do Lava Pet</p>
@@ -117,13 +169,13 @@
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1.5 ml-1">Senha de Acesso</label>
           <div class="relative">
-            <input type="password" id="adminSenha" value="admin123" required placeholder="••••••••" 
+            <input type="password" id="adminSenha" required placeholder="••••••••" 
                    class="w-full p-3.5 glass-input rounded-2xl outline-none text-sm pr-12 transition-all">
             <button type="button" onclick="alternarVisibilidadeSenha()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-xs p-1">
-              <span id="txtIconEye">👁️</span>
+              <span id="txtIconEye">ver</span>
             </button>
           </div>
-          <p class="text-[11px] text-slate-500 mt-1.5 ml-1">Credencial inicial de fábrica: <code class="text-indigo-400">admin@lavapet.com</code> / <code class="text-indigo-400">admin123</code></p>
+          <p class="text-[11px] text-slate-500 mt-1.5 ml-1">Primeiro acesso? Defina seu e-mail e senha — eles serão o acesso do gestor.</p>
         </div>
 
         <div id="msgErroLogin" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[--bad] text-xs font-semibold text-center">
@@ -151,7 +203,7 @@
     <!-- BARRA SUPERIOR (HEADER) -->
     <header class="glass-panel sticky top-0 z-40 border-b border-white/5 px-4 lg:px-8 py-3.5 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <span class="text-2xl">🛁</span>
+        <span class="text-sm font-black tracking-widest text-[#84364c]">LP</span>
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-base font-extrabold text-white tracking-tight">Lava Pet</h1>
@@ -171,7 +223,7 @@
 
         <!-- Botão de Notificações / Alertas -->
         <button id="btnAlertaDono" onclick="alternarNotificacoesDono()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-white/10 transition-all card-touch">
-          <span id="iconeSino">🔔</span>
+          <span id="iconeSino" aria-hidden="true">!</span>
           <span id="textoAlertaSino" class="hidden sm:inline">Ativar Alertas</span>
         </button>
 
@@ -198,7 +250,7 @@
         <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
           <div class="flex items-center justify-between text-slate-400 mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider">Agendados Hoje</span>
-            <span class="text-lg">📅</span>
+            <span class="text-lg font-bold text-[#84364c]">01</span>
           </div>
           <div class="flex items-baseline gap-2">
             <span id="metricaTotal" class="text-2xl lg:text-3xl font-extrabold text-white">0</span>
@@ -209,7 +261,7 @@
         <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
           <div class="flex items-center justify-between text-slate-400 mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider">Faturamento Previsto</span>
-            <span class="text-lg">💰</span>
+            <span class="text-lg font-bold text-[#84364c]">R$</span>
           </div>
           <div class="flex items-baseline gap-2">
             <span id="metricaReceita" class="text-2xl lg:text-3xl font-extrabold text-[--ok]">R$ 0</span>
@@ -219,7 +271,7 @@
         <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
           <div class="flex items-center justify-between text-slate-400 mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider">Concluídos</span>
-            <span class="text-lg">✨</span>
+            <span class="text-lg font-bold text-[#84364c]">OK</span>
           </div>
           <div class="flex items-baseline gap-2">
             <span id="metricaConcluidos" class="text-2xl lg:text-3xl font-extrabold text-indigo-400">0</span>
@@ -230,7 +282,7 @@
         <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
           <div class="flex items-center justify-between text-slate-400 mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider">Próximo Pet</span>
-            <span class="text-lg">⏰</span>
+            <span class="text-lg font-bold text-[#84364c]">PR</span>
           </div>
           <div class="truncate">
             <span id="metricaProximo" class="text-base lg:text-lg font-bold text-slate-200">Nenhum</span>
@@ -253,7 +305,7 @@
             Amanhã
           </button>
           <button onclick="carregarAgendamentosReais()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 card-touch" title="Sincronizar">
-            🔄
+            Sincronizar
           </button>
         </div>
 
@@ -269,6 +321,12 @@
           <!-- Botão Novo Agendamento Manual Balcão -->
           <button onclick="abrirModalManual()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs shadow-md shadow-emerald-500/20 card-touch whitespace-nowrap flex items-center gap-1.5">
             <span>+</span> Novo Agendamento
+          </button>
+          <button onclick="exportarRelatorioCSV()" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/5 card-touch whitespace-nowrap" title="Exportar CSV do dia">
+            CSV
+          </button>
+          <button onclick="abrirConfiguracoes()" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/5 card-touch whitespace-nowrap" title="Configurações da empresa">
+            Config
           </button>
         </div>
 
@@ -299,7 +357,7 @@
         <!-- Estado Vazio (Sem Dados Mockados) -->
         <div id="estadoVazio" class="hidden glass-panel p-12 rounded-3xl border border-white/5 text-center my-6">
           <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 text-3xl flex items-center justify-center mx-auto mb-3">
-            📅
+            Agenda
           </div>
           <h3 class="text-base font-bold text-white">Nenhum agendamento real nesta data</h3>
           <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">Quando os clientes realizarem agendamentos pelo site, eles aparecerão aqui instantaneamente.</p>
@@ -323,9 +381,9 @@
     <div class="glass-panel p-6 rounded-3xl max-w-md w-full border border-white/10 shadow-2xl relative">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <span>➕</span> Novo Agendamento Balcão
+          <span>+</span> Novo Agendamento Balcão
         </h3>
-        <button onclick="fecharModalManual()" class="text-slate-400 hover:text-white p-1 rounded-lg text-sm">✕</button>
+        <button onclick="fecharModalManual()" class="text-slate-400 hover:text-white p-1 rounded-lg text-sm" aria-label="Fechar">Fechar</button>
       </div>
 
       <form id="formManual" onsubmit="salvarAgendamentoManual(event)" class="space-y-3.5">
@@ -373,7 +431,7 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Data</label>
-          <input type="date" id="mData" required class="w-full glass-input p-3 rounded-xl text-xs outline-none cursor-pointer">
+          <input type="date" id="mData" required onchange="atualizarHorariosManual()" class="w-full glass-input p-3 rounded-xl text-xs outline-none cursor-pointer">
         </div>
 
         <div class="pt-2 flex items-center justify-end gap-2">
@@ -384,7 +442,116 @@
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>
+
+<!-- ============================================== -->
+<!--     3. MODAL DE CONFIGURAÇÕES DA EMPRESA       -->
+<!-- ============================================== -->
+<div id="modalConfiguracoes" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" style="background: rgba(56,43,45,.42);">
+  <div class="glass-panel w-full max-w-2xl mx-auto my-8 p-6 rounded-3xl border border-white/10 shadow-2xl">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-base font-extrabold text-white flex items-center gap-2">Configurações da Empresa</h3>
+      <button onclick="fecharConfiguracoes()" class="text-slate-400 hover:text-white p-1 rounded-lg text-sm" aria-label="Fechar">Fechar</button>
+    </div>
+
+    <form onsubmit="salvarConfiguracoesEmpresa(event)" class="space-y-5">
+      <!-- Identidade -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Nome da Empresa</label>
+          <input type="text" id="confNome" required class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Slogan</label>
+          <input type="text" id="confSlogan" class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">WhatsApp da Empresa</label>
+          <input type="tel" id="confWhatsapp" placeholder="(11) 90000-0000" class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Cor Principal</label>
+          <input type="color" id="confCor" class="w-full h-[42px] glass-input rounded-xl cursor-pointer p-1">
+        </div>
+      </div>
+
+      <!-- Horários -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Horários (separados por vírgula)</label>
+        <input type="text" id="confHorarios" placeholder="08:00, 09:00, 10:00..." class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+      </div>
+
+      <!-- Serviços -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-xs font-semibold text-slate-400 ml-1">Serviços</label>
+          <button type="button" onclick="adicionarServicoConfig()" class="text-xs font-bold text-indigo-400 hover:text-white px-2 py-1 rounded-lg card-touch">+ Adicionar</button>
+        </div>
+        <div id="listaServicosConfig" class="space-y-2"></div>
+      </div>
+
+      <!-- Bloqueios -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Bloquear Data (feriados/folgas)</label>
+        <div class="flex items-center gap-2">
+          <input type="date" id="confBloquearData" class="glass-input p-2.5 rounded-xl text-xs outline-none cursor-pointer flex-1">
+          <button type="button" onclick="bloquearDataConfig()" class="px-3 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold card-touch">Bloquear</button>
+        </div>
+        <div id="listaBloqueiosConfig" class="flex flex-wrap gap-1.5 mt-2"></div>
+      </div>
+
+      <!-- Pix -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Chave Pix</label>
+          <input type="text" id="confPixChave" placeholder="CPF, e-mail, telefone ou aleatória" class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Nome Recebedor</label>
+          <input type="text" id="confPixNome" class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Sinal (% do valor)</label>
+          <input type="number" id="confPixSinal" min="0" max="100" value="30" class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+        </div>
+      </div>
+
+      <!-- Templates WhatsApp -->
+      <div class="grid grid-cols-1 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Template WhatsApp — Confirmação</label>
+          <textarea id="confTemplateConfirmacao" rows="2" class="w-full glass-input p-3 rounded-xl text-xs outline-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Template WhatsApp — Lembrete</label>
+          <textarea id="confTemplateLembrete" rows="2" class="w-full glass-input p-3 rounded-xl text-xs outline-none"></textarea>
+          <p class="text-[10px] text-slate-500 mt-1 ml-1">Variáveis: {tutor} {pet} {servico} {data} {hora} {codigo} {empresa} {valor}</p>
+        </div>
+      </div>
+
+      <!-- Segurança & Dados -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 border-t border-white/5">
+        <button type="button" onclick="exportarBackup()" class="px-3 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold card-touch">Exportar Backup</button>
+        <button type="button" onclick="apagarDadosLGPD()" class="px-3 py-2.5 rounded-xl bg-red-500/10 text-[--bad] text-xs font-semibold border border-red-500/20 card-touch">Apagar Dados (LGPD)</button>
+        <button type="submit" class="px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-md card-touch">Salvar Configurações</button>
+      </div>
+    </form>
+
+    <!-- Alterar senha -->
+    <form id="formAlterarSenha" onsubmit="alterarSenhaGestor(event)" class="pt-3 mt-3 border-t border-white/5 space-y-2">
+      <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Alterar Senha do Gestor</label>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="password" id="confSenhaAtual" placeholder="Senha atual" required class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+        <input type="password" id="confSenhaNova" placeholder="Nova senha (6+)" required class="w-full glass-input p-3 rounded-xl text-xs outline-none">
+      </div>
+      <div class="flex items-center justify-between">
+        <span id="msgAlterarSenha" class="hidden text-xs font-semibold text-emerald-400"></span>
+        <button type="submit" class="px-3 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold card-touch">Alterar Senha</button>
+      </div>
+    </form>
+  </div>
+</div>
 

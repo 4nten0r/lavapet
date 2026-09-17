@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidade - Lava Pet</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lavapet-wine: #84364c;
+      --lavapet-ink: #382b2d;
+      --lavapet-muted: #756563;
+      --lavapet-line: #e9ded8;
+      --lavapet-cream: #fcfaf7;
+      --lavapet-rose: #f2e5e3;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--lavapet-ink);
+      background: var(--lavapet-cream);
+      background-image: radial-gradient(circle at 90% 0%, rgba(242,229,227,.9), transparent 30%), linear-gradient(135deg, #fcfaf7 0%, #f8eeeb 100%);
+      min-height: 100vh;
+    }
+    .font-heading { font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif; }
+    h2 { color: var(--lavapet-wine); }
+    .card {
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--lavapet-line);
+      border-radius: 1.5rem;
+      box-shadow: 0 12px 30px rgba(92,52,55,.06);
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <div class="max-w-2xl mx-auto px-5 py-10">
+    <a href="preview.html" class="inline-flex items-center gap-1.5 text-xs font-bold text-[--lavapet-muted] hover:text-[--lavapet-wine] transition-colors mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+      </svg>
+      Voltar ao agendamento
+    </a>
+
+    <div class="card p-7 sm:p-9">
+      <p class="text-[10px] font-extrabold uppercase tracking-widest text-[--lavapet-wine] mb-1">LGPD - Lei 13.709/2018</p>
+      <h1 class="font-heading text-2xl font-black tracking-tight mb-2" data-empresa-nome>Política de Privacidade</h1>
+      <p class="text-xs text-[--lavapet-muted] mb-6">Última atualização: <span id="dataAtualizacao"></span></p>
+
+      <div class="space-y-5 text-sm leading-relaxed text-[--lavapet-ink]">
+        <section>
+          <h2 class="font-heading text-base font-extrabold mb-1.5">1. Dados que coletamos</h2>
+          <p>Para realizar o agendamento coletamos: nome do tutor, número de WhatsApp, nome do pet, raça e o serviço escolhido. Não solicitamos dados sensíveis nem dados de pagamento no portal (o pagamento é combinado diretamente com a empresa).</p>
+        </section>
+
+        <section>
+          <h2 class="font-heading text-base font-extrabold mb-1.5">2. Para que usamos</h2>
+          <p>Os dados são usados exclusivamente para: (a) confirmar e lembrar o agendamento por WhatsApp; (b) organizar a agenda da empresa; (c) prevenir conflitos de horário. Não vendemos nem compartilhamos seus dados com terceiros para marketing.</p>
+        </section>
+
+        <section>
+          <h2 class="font-heading text-base font-extrabold mb-1.5">3. Base legal</h2>
+          <p>O tratamento ocorre com base no seu consentimento, dado ao marcar a caixa de aceitação no momento do agendamento, e no interesse legítimo da empresa em executar o serviço contratado.</p>
+        </section>
+
+        <section>
+          <h2 class="font-heading text-base font-extrabold mb-1.5">4. Armazenamento</h2>
+          <p>Os agendamentos ficam registrados na agenda da empresa e, quando aplicável, sincronizados com a planilha de controle. Dados mantidos no seu navegador (preferências de tema e sessão) ficam apenas no seu dispositivo.</p>
+        </section>
+
+        <section>
+          <h2 class="font-heading text-base font-extrabold mb-1.5">5. Seus direitos</h2>
+          <p>Você pode solicitar a qualquer momento: acesso aos seus dados, correção, exclusão ou revogação do consentimento. Basta enviar mensagem ao WhatsApp da empresa ou pedir no balcão. Solicitações de exclusão removem o histórico de contato associado a você.</p>
+        </section>
+
+        <section>
+          <h2 class="font-heading text-base font-extrabold mb-1.5">6. Contato</h2>
+          <p>Encarregado de dados (DPO): o gestor da empresa. O canal oficial de contato é o WhatsApp informado na página de agendamento.</p>
+        </section>
+      </div>
+    </div>
+
+    <p class="text-center text-[10px] text-[--lavapet-muted] mt-6" data-empresa-nome>Lava Pet</p>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('dataAtualizacao').innerText = new Date().toLocaleDateString('pt-BR');
+      const cfg = obterConfig();
+      document.querySelectorAll('[data-empresa-nome]').forEach(el => el.innerText = 'Política de Privacidade - ' + cfg.nome);
+      document.title = 'Política de Privacidade - ' + cfg.nome;
+    });
+  </script>
+</body>
+</html>

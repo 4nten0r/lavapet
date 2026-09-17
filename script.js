@@ -87,25 +87,25 @@ function alternarLuzETema(forcarEstado) {
   const body = document.body;
 
   if (lampOn) {
-    // ☀️ LUZ ACESA = MODO CLARO
+    // MODO CLARO
     body.classList.remove('dark-theme');
     
     if (lampGlow) { lampGlow.classList.remove('opacity-0'); lampGlow.classList.add('opacity-100'); }
     if (lampBeam) { lampBeam.classList.remove('opacity-0'); lampBeam.classList.add('opacity-95'); }
     
     if (badgeTema) {
-      badgeTema.innerText = "☀️ Modo Claro";
+      badgeTema.innerText = "Modo claro";
       badgeTema.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 transition-colors";
     }
   } else {
-    // 🌙 LUZ APAGADA = MODO ESCURO
+    // MODO ESCURO
     body.classList.add('dark-theme');
     
     if (lampGlow) { lampGlow.classList.remove('opacity-100'); lampGlow.classList.add('opacity-0'); }
     if (lampBeam) { lampBeam.classList.remove('opacity-95'); lampBeam.classList.add('opacity-0'); }
     
     if (badgeTema) {
-      badgeTema.innerText = "🌙 Modo Escuro";
+      badgeTema.innerText = "Modo escuro";
       badgeTema.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-800 text-indigo-300 border border-slate-700 transition-colors";
     }
   }
@@ -290,7 +290,7 @@ function goTo(screen, stepIndex) {
 
   if (screen === 'agendamento') {
     const chip = document.getElementById('chipPetSelecionado');
-    if (chip) chip.innerText = `🐾 ${petDados.nome || 'Pet'}`;
+    if (chip) chip.innerText = petDados.nome || 'Pet';
     inicializarTelaAgendamento();
   }
 }
@@ -346,10 +346,26 @@ function validarLogin() {
     mostrarErro('tutorTelefone', 'errTelefone', false);
   }
 
+  // LGPD: consentimento obrigatório antes de coletar dados
+  const consent = document.getElementById('consentLGPD');
+  const errConsent = document.getElementById('errConsentLGPD');
+  if (consent && !consent.checked) {
+    if (errConsent) errConsent.classList.remove('hidden');
+    hasError = true;
+  } else if (errConsent) {
+    errConsent.classList.add('hidden');
+  }
+
   if (!hasError) {
     tutorDados.nome = nome;
     tutorDados.telefone = telefone;
     localStorage.setItem('lavapet_user', JSON.stringify(tutorDados));
+    // Registro de consentimento (LGPD)
+    localStorage.setItem('lavapet_consentimento', JSON.stringify({
+      aceito: true,
+      dataHora: new Date().toISOString(),
+      telefone: telefone
+    }));
     goTo('novoPet', 2);
   }
 }
@@ -387,14 +403,14 @@ function reagirNomePet(nome) {
   const mascote = document.getElementById('petMascote');
   if (!mascote) return;
 
-  const emojis = ['🐶', '🐕', '🐩', '🐾', '✨', '🦴'];
+  const estados = ['Calmo', 'Atento', 'Curioso', 'Pronto', 'Cuidado'];
   if (nome.length > 0) {
-    const indice = Math.abs(nome.charCodeAt(0)) % emojis.length;
-    mascote.innerText = emojis[indice];
+    const indice = Math.abs(nome.charCodeAt(0)) % estados.length;
+    mascote.innerText = estados[indice];
     mascote.classList.add('scale-125');
     setTimeout(() => mascote.classList.remove('scale-125'), 200);
   } else {
-    mascote.innerText = '🐶';
+    mascote.innerText = 'Pet';
   }
 }
 
@@ -529,12 +545,10 @@ function gerarHorarios() {
   const errEl = document.getElementById('errHorario');
   if (errEl) errEl.classList.add('hidden');
 
-  const listaHoras = [
-    "08:00", "09:00", "10:00", "11:00",
-    "13:00", "14:00", "15:00", "16:00", "17:00"
-  ];
-
+  const cfg = obterConfig();
+  const listaHoras = cfg.horarios;
   const dataAtual = dataSelecionada || getHojeLocalString();
+  const aberto = dataDisponivel(dataAtual, cfg);
 
   listaHoras.forEach(hora => {
     const btn = document.createElement('button');
@@ -542,10 +556,11 @@ function gerarHorarios() {
     const ocupado = horariosOcupados.some(item => {
       return item.includes(dataAtual) && item.includes(hora);
     });
+    const indisponivel = !aberto;
 
     const isSelecionado = (hora === horarioSelecionado);
 
-    if (ocupado) {
+    if ((ocupado || indisponivel) && !isSelecionado) {
       btn.disabled = true;
       btn.innerText = hora;
       btn.className = "py-2.5 px-2 border rounded-2xl font-bold text-xs bg-slate-100/80 border-slate-200 text-slate-300 line-through cursor-not-allowed opacity-50";
@@ -560,6 +575,17 @@ function gerarHorarios() {
 
     container.appendChild(btn);
   });
+
+  // Aviso de dia fechado/bloqueado
+  const aviso = document.getElementById('avisoDataBloqueada');
+  if (aviso) {
+    if (!aberto) {
+      aviso.innerText = 'Dia fechado ou bloqueado pela empresa. Escolha outra data.';
+      aviso.classList.remove('hidden');
+    } else {
+      aviso.classList.add('hidden');
+    }
+  }
 }
 
 function selecionarHorario(hora) {
@@ -642,6 +668,27 @@ async function finalizar() {
     return;
   }
 
+  // Revalidar disponibilidade (data fechada ou horário já ocupado)
+  const cfg = obterConfig();
+  if (!dataDisponivel(dataFinal, cfg)) {
+    alert('Este dia está fechado. Escolha outra data.');
+    gerarHorarios();
+    return;
+  }
+  const jaOcupado = horariosOcupados.some(item => item.includes(dataFinal) && item.includes(horarioSelecionado));
+  if (jaOcupado) {
+    alert('Este horário acabou de ser ocupado. Escolha outro.');
+    gerarHorarios();
+    return;
+  }
+
+  // Consentimento LGPD
+  const consent = document.getElementById('consentLGPD');
+  if (consent && !consent.checked) {
+    alert('Para agendar, é necessário aceitar a Política de Privacidade.');
+    return;
+  }
+
   const btnFinalizar = document.getElementById('btnConfirmarAgendamento');
   const textoOriginal = btnFinalizar.innerHTML;
   
@@ -688,6 +735,7 @@ async function finalizar() {
       hora: horarioSelecionado,
       status: 'Confirmado',
       origem: 'Site Oficial',
+      consentimentoLGPD: consent ? { aceito: consent.checked, dataHora: new Date().toISOString() } : null,
       criadoEm: new Date().toISOString()
     };
 
@@ -705,6 +753,24 @@ async function finalizar() {
     document.getElementById('cServico').innerText = `${petDados.servico} (R$ ${petDados.preco || 90})`;
     document.getElementById('cDataHora').innerText = `${dataFormatada} às ${horarioSelecionado}`;
     
+    // Nome da empresa + resumo de Pix (sinal de reserva)
+    const cEmpresa = document.getElementById('cEmpresa');
+    if (cEmpresa) cEmpresa.innerText = cfg.nome;
+    const boxPix = document.getElementById('boxPixSinal');
+    if (boxPix) {
+      if (cfg.pix.chave) {
+        const sinal = Math.round((petDados.preco || 90) * (cfg.pix.sinal / 100) * 100) / 100;
+        boxPix.innerHTML = `
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Sinal de reserva (Pix)</p>
+          <p class="text-xs text-slate-700 font-semibold">R$ ${sinal} para ${cfg.pix.nome || cfg.nome}</p>
+          <p class="text-[11px] font-mono font-bold text-indigo-600 mt-0.5 break-all">${cfg.pix.chave}</p>
+          <button onclick="copiarChavePix()" class="mt-1.5 text-[10px] font-extrabold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1 rounded-lg transition-colors">Copiar chave</button>`;
+        boxPix.classList.remove('hidden');
+      } else {
+        boxPix.classList.add('hidden');
+      }
+    }
+    
     goTo('confirmacao');
 
     setTimeout(() => {
@@ -721,17 +787,26 @@ async function finalizar() {
 
 function compartilharWhatsApp() {
   if (!ultimoAgendamento) return;
+  const cfg = obterConfig();
   const foneLimpo = (ultimoAgendamento.telefone || '').replace(/\D/g, "");
-  const texto = encodeURIComponent(
-    `🛁 *COMPROVANTE LAVA PET*\n` +
-    `Código: ${ultimoAgendamento.codigo}\n` +
-    `Pet: ${ultimoAgendamento.pet}\n` +
-    `Serviço: ${ultimoAgendamento.servico}\n` +
-    `Data e Hora: ${ultimoAgendamento.data} às ${ultimoAgendamento.hora}\n` +
-    `Tutor: ${ultimoAgendamento.tutor}\n\n` +
-    `Seu amigo vai receber o melhor cuidado! ✨`
-  );
-  window.open(`https://api.whatsapp.com/send?phone=55${foneLimpo}&text=${texto}`, '_blank');
+  const msg = preencherTemplate(cfg.templates.confirmacao, {
+    tutor: ultimoAgendamento.tutor,
+    pet: ultimoAgendamento.pet,
+    servico: ultimoAgendamento.servico,
+    data: formatarDataBr(ultimoAgendamento.data),
+    hora: ultimoAgendamento.hora,
+    codigo: ultimoAgendamento.codigo,
+    empresa: cfg.nome,
+    valor: ultimoAgendamento.preco
+  });
+  window.open(`https://api.whatsapp.com/send?phone=55${foneLimpo}&text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function copiarChavePix() {
+  const cfg = obterConfig();
+  if (navigator.clipboard && cfg.pix.chave) {
+    navigator.clipboard.writeText(cfg.pix.chave);
+  }
 }
 
 function novoAgendamentoCliente() {
@@ -742,6 +817,39 @@ function novoAgendamentoCliente() {
   goTo('novoPet', 2);
 }
 
+// ===================================================
+//   11. WHITE-LABEL & SERVIÇOS DINÂMICOS (config.js)
+// ===================================================
+
+function aplicarIdentidadePortal() {
+  const cfg = obterConfig();
+  document.querySelectorAll('[data-empresa-nome]').forEach(el => el.innerText = cfg.nome);
+  document.querySelectorAll('[data-empresa-slogan]').forEach(el => el.innerText = cfg.slogan);
+  const r = document.documentElement.style;
+  r.setProperty('--brand', cfg.corPrimaria);
+}
+
+// Renderizar cards de serviço a partir da configuração da empresa
+function renderizarServicosPortal() {
+  const cfg = obterConfig();
+  const container = document.getElementById('servicosContainer');
+  if (!container) return;
+  const iniciais = ['BANHO', 'TOSA', 'COMBO'];
+  container.innerHTML = cfg.servicos.map((s, i) => `
+    <div onclick="selecionarServico('${s.nome.replace(/'/g, "\\'")}', ${s.preco}, this)" class="servico-card card-touch p-3.5 border border-slate-200 rounded-2xl bg-white flex items-center justify-between cursor-pointer hover:border-indigo-300 relative overflow-hidden group">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-[9px] font-black shadow-inner group-hover:scale-110 transition-transform">
+          ${iniciais[i % iniciais.length]}
+        </div>
+        <div>
+          <p class="font-extrabold text-slate-800 text-xs">${s.nome}</p>
+          <p class="text-slate-400 text-[10px]">${s.descricao || ''}${s.duracao ? ` - ${s.duracao} min` : ''}</p>
+        </div>
+      </div>
+      <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100 whitespace-nowrap">R$ ${s.preco}</span>
+    </div>`).join('');
+}
+
 
 // ===================================================
 //   11. INICIALIZAÇÃO DA APLICAÇÃO
@@ -750,6 +858,8 @@ document.addEventListener("DOMContentLoaded", () => {
   dataSelecionada = getHojeLocalString();
   checarSessao();
   inicializarTema();
+  aplicarIdentidadePortal();
+  renderizarServicosPortal();
 
   const splashSlot = document.getElementById('splashSlot');
   if (splashSlot) animarOrbitaSlot(splashSlot);

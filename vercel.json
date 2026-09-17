@@ -2,6 +2,9 @@
   "routes": [
     { "src": "/admin", "dest": "/admin.html" },
     { "src": "/gestor", "dest": "/admin.html" },
+    { "src": "/agendar", "dest": "/preview.html" },
+    { "src": "/sobre", "dest": "/landing.html" },
+    { "src": "/privacidade", "dest": "/privacidade.html" },
     { "src": "/", "dest": "/preview.html" }
   ]
 }

@@ -6,6 +6,7 @@
   <title>Lava Pet - Cuidado Premium</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
   <style>
     :root {
       --ice: #dceaff;
@@ -316,6 +317,110 @@
       pointer-events: none;
       z-index: 999;
     }
+
+    /* Identidade visual compartilhada com o Doce Afeto */
+    :root {
+      --lavapet-wine: #84364c;
+      --lavapet-wine-dark: #67263a;
+      --lavapet-ink: #382b2d;
+      --lavapet-muted: #756563;
+      --lavapet-line: #e9ded8;
+      --lavapet-cream: #fcfaf7;
+      --lavapet-rose: #f2e5e3;
+    }
+
+    body {
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 0;
+      color: var(--lavapet-ink);
+      background: var(--lavapet-cream);
+      background-image: radial-gradient(circle at 8% 8%, rgba(242, 229, 227, .9), transparent 28%), linear-gradient(135deg, #fcfaf7 0%, #f8eeeb 100%);
+      user-select: auto;
+    }
+
+    #mainCard {
+      width: min(1240px, 100%);
+      max-width: 1240px;
+      min-height: 100vh;
+      margin: 0 auto;
+      border: 0;
+      border-radius: 0;
+      background: rgba(252, 250, 247, .94);
+      box-shadow: none;
+      overflow: visible;
+    }
+
+    #mainCard > header {
+      min-height: 94px;
+      padding: 18px 48px;
+      border-bottom: 1px solid var(--lavapet-line);
+      background: rgba(252, 250, 247, .96);
+    }
+
+    #mainCard > header > div:first-child:before {
+      content: 'LP';
+      display: grid;
+      place-items: center;
+      width: 45px;
+      height: 52px;
+      margin-right: 2px;
+      border: 1px solid #cfa6aa;
+      border-radius: 50% 50% 45% 45%;
+      color: var(--lavapet-wine);
+      font-size: 25px;
+      transform: rotate(-8deg);
+    }
+
+    #mainCard > header > div:first-child > div:first-child { display: none; }
+    #mainCard > header .font-heading { color: var(--lavapet-wine); font-family: Georgia, serif; font-size: 30px; font-weight: 400; }
+    #mainCard > header .text-indigo-500 { color: var(--lavapet-muted); letter-spacing: 2px; }
+    #badgeTema { color: var(--lavapet-wine); background: var(--lavapet-rose); border-color: #e4c9c8; }
+
+    #mainCard > div.flex-1 { overflow: visible; }
+    #mainCard .lamp-wire, #mainCard .lamp-head, #mainCard .lamp-beam, #dicaLampada { display: none; }
+
+    #progressBar { max-width: 540px; margin: 0 auto; padding-top: 28px; }
+    #progressBar .bg-indigo-500, #progressFill { background: var(--lavapet-wine) !important; }
+    #progressBar [id^="step"] { background: var(--lavapet-rose); color: var(--lavapet-wine); }
+    #progressBar #step1 { background: var(--lavapet-wine); color: white; }
+
+    #mainCard > div.flex-1 > div.flex-1 { width: min(620px, calc(100% - 48px)); margin: 0 auto; min-height: 690px; }
+    .screen { padding: 52px 0 48px !important; }
+    .screen h1, .screen h2 { color: var(--lavapet-ink); font-family: Georgia, serif; font-weight: 400; letter-spacing: -1px; }
+    .screen h1 { font-size: clamp(38px, 5vw, 58px); line-height: 1.05; }
+    .screen h2 { font-size: 32px; }
+    .screen p.text-slate-400, .screen .text-slate-400 { color: var(--lavapet-muted); }
+    .screen label, .screen .text-slate-600 { color: var(--lavapet-ink); }
+    .screen input { background: #fffaf7; border-color: var(--lavapet-line); color: var(--lavapet-ink); border-radius: 14px; box-shadow: none; }
+    .screen input:focus { border-color: var(--lavapet-wine); box-shadow: 0 0 0 4px rgba(132, 54, 76, .12); }
+    .screen button.bg-gradient-to-r { background: var(--lavapet-wine); box-shadow: 0 12px 24px rgba(132, 54, 76, .18); }
+    .screen button.bg-gradient-to-r:hover { background: var(--lavapet-wine-dark); }
+    .shimmer-btn::after { display: none; }
+    .servico-card { background: #fff; border-color: var(--lavapet-line) !important; border-radius: 14px; }
+    .servico-card:hover, .servico-card.border-indigo-600 { border-color: var(--lavapet-wine) !important; }
+    .servico-card .bg-indigo-600, .servico-card .text-indigo-600 { background-color: var(--lavapet-wine); color: white; }
+    .servico-card .bg-blue-50, .servico-card .bg-purple-50 { background: var(--lavapet-rose); color: var(--lavapet-wine); }
+    #boxResumoAgendamento { background: var(--lavapet-rose); border-color: #e4c9c8; }
+    #txtResumoAgendamento, #chipPetSelecionado { color: var(--lavapet-wine); }
+    #confirmacao .ticket-cutout { background: linear-gradient(to bottom, #fff, var(--lavapet-rose)); border-color: var(--lavapet-line); }
+    #confirmacao .bg-emerald-50 { background: #edf7f0; }
+    #splash { background: linear-gradient(135deg, var(--lavapet-wine-dark), var(--lavapet-wine)) !important; }
+
+    @media (max-width: 680px) {
+      #mainCard > header { min-height: 77px; padding: 14px 18px; }
+      #mainCard > header > div:first-child:before { width: 35px; height: 42px; font-size: 20px; }
+      #mainCard > header .font-heading { font-size: 25px; }
+      #mainCard > header .text-indigo-500 { font-size: 7px; letter-spacing: 1.5px; }
+      #mainCard > div.flex-1 > div.flex-1 { width: calc(100% - 36px); min-height: calc(100vh - 77px); }
+      .screen { padding: 34px 0 30px !important; }
+      .screen h1 { font-size: 43px; }
+      .screen h2 { font-size: 29px; }
+      .screen .grid-cols-2 { grid-template-columns: 1fr; }
+      .servico-card { padding: 14px !important; }
+      #progressBar { padding-inline: 18px; }
+    }
   </style>
 </head>
 
@@ -337,7 +442,7 @@
     <header class="px-7 pt-5 pb-3 flex items-center justify-between border-b border-slate-100/90 z-40 bg-white/80 backdrop-blur-md">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-500/30">
-          🛁
+          LP
         </div>
         <div>
           <span class="font-heading font-extrabold tracking-tight text-slate-800 text-base leading-none block">Lava Pet</span>
@@ -348,7 +453,7 @@
       <!-- Badge Pulsante de Modo Claro / Escuro com dica -->
       <div class="flex items-center gap-2">
         <span id="badgeTema" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 transition-colors">
-          ☀️ Modo Claro
+          Modo claro
         </span>
       </div>
     </header>
@@ -371,7 +476,7 @@
 
         <!-- Dica sutil que surge no início -->
         <span id="dicaLampada" class="absolute top-12 text-[10px] font-bold text-indigo-600/70 bg-indigo-50/90 px-2 py-0.5 rounded-full border border-indigo-100/60 pointer-events-none transition-opacity duration-700">
-          💡 Puxe a cordinha para alternar o Modo Escuro
+          Alternar tema
         </span>
       </div>
 
@@ -392,9 +497,9 @@
 
         <!-- 0. SPLASH SCREEN -->
         <div id="splash" class="screen active-screen absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 text-white">
-          <div class="text-7xl mb-4 animate-bounce filter drop-shadow-lg">🛁</div>
-          <h1 class="font-heading text-4xl font-black tracking-tight">Lava Pet</h1>
-          <p class="mt-2 text-indigo-200 font-light tracking-wide text-xs uppercase letter-spacing-2">Estética e Conforto Animal</p>
+          <div class="text-5xl mb-4 font-heading font-black tracking-widest">LP</div>
+          <h1 class="font-heading text-4xl font-black tracking-tight" data-empresa-nome>Lava Pet</h1>
+          <p class="mt-2 text-indigo-200 font-light tracking-wide text-xs uppercase letter-spacing-2" data-empresa-slogan>Estética e Conforto Animal</p>
 
           <div class="mt-10 flex flex-col items-center gap-2">
             <div class="orbit scale-90">
@@ -413,7 +518,7 @@
           
           <div class="w-full text-center mt-1 stagger-1">
             <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 text-2xl mb-2 shadow-inner">
-              👋
+              <span class="font-heading text-xl font-bold">Olá</span>
             </div>
             <h1 id="welcomeTitle" class="font-heading text-2xl font-black text-slate-800 tracking-tight">Seja bem-vindo!</h1>
             <p id="welcomeDesc" class="text-slate-400 text-xs mt-0.5">Identifique-se para garantir o melhor horário do seu pet.</p>
@@ -425,7 +530,6 @@
               <div class="relative">
                 <input type="text" id="tutorNome" placeholder="Ex: Rodrigo Mendes" 
                        class="w-full p-4 pl-11 bg-slate-50/80 rounded-2xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 focus:bg-white outline-none text-slate-800 text-sm font-medium transition-all shadow-sm">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">👤</span>
               </div>
               <span id="errNome" class="text-[--bad] text-xs ml-1 mt-1 hidden font-bold">Por favor, preencha seu nome.</span>
             </div>
@@ -435,7 +539,6 @@
               <div class="relative">
                 <input type="tel" id="tutorTelefone" placeholder="(00) 00000-0000" maxlength="15"
                        class="w-full p-4 pl-11 bg-slate-50/80 rounded-2xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 focus:bg-white outline-none text-slate-800 text-sm font-medium transition-all shadow-sm">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">📱</span>
               </div>
               <span id="errTelefone" class="text-[--bad] text-xs ml-1 mt-1 hidden font-bold">Digite um telefone válido com DDD.</span>
             </div>
@@ -443,12 +546,16 @@
 
           <div class="w-full space-y-2 mt-4 stagger-3">
             <button id="btnAvancarLogin" onclick="validarLogin()" class="shimmer-btn w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-4 rounded-2xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 card-touch">
-              <span>Continuar para o Pet</span>
-              <span class="text-base">→</span>
+              <span>Continuar para o pet</span>
             </button>
             <button id="btnLogout" onclick="limparSessao()" class="w-full text-slate-400 text-xs hover:text-slate-600 transition-colors py-1 hidden">
               Não é você? Trocar de tutor
             </button>
+            <label class="flex items-start gap-2 text-left cursor-pointer mt-2 px-1">
+              <input type="checkbox" id="consentLGPD" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/30 cursor-pointer">
+              <span class="text-[10px] text-slate-500 leading-snug">Li e aceito a <a href="privacidade.html" target="_blank" class="text-indigo-600 font-bold underline">Política de Privacidade</a> e o uso dos meus dados para o agendamento (LGPD).</span>
+            </label>
+            <span id="errConsentLGPD" class="text-[--bad] text-[10px] ml-1 hidden font-bold">É preciso aceitar a Política de Privacidade.</span>
           </div>
         </div>
 
@@ -464,7 +571,7 @@
                 </button>
                 <h2 class="font-heading text-xl font-black text-slate-800 ml-1">Quem vamos cuidar?</h2>
               </div>
-              <span id="petMascote" class="text-2xl animate-bounce">🐶</span>
+              <span id="petMascote" class="text-xs font-bold uppercase tracking-widest text-indigo-600">Pet</span>
             </div>
             
             <div class="space-y-3.5 stagger-2">
@@ -491,7 +598,7 @@
                   <div onclick="selecionarServico('Banho', 50, this)" class="servico-card card-touch p-3.5 border border-slate-200 rounded-2xl bg-white flex items-center justify-between cursor-pointer hover:border-indigo-300 relative overflow-hidden group">
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
-                        🛁
+                        BANHO
                       </div>
                       <div>
                         <p class="font-extrabold text-slate-800 text-xs">Banho Hidratante</p>
@@ -504,7 +611,7 @@
                   <div onclick="selecionarServico('Tosa', 60, this)" class="servico-card card-touch p-3.5 border border-slate-200 rounded-2xl bg-white flex items-center justify-between cursor-pointer hover:border-indigo-300 relative overflow-hidden group">
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
-                        ✂️
+                        TOSA
                       </div>
                       <div>
                         <p class="font-extrabold text-slate-800 text-xs">Tosa Higiênica ou Geral</p>
@@ -517,7 +624,7 @@
                   <div onclick="selecionarServico('Banho e Tosa', 90, this)" class="servico-card card-touch p-3.5 border-2 border-indigo-600 rounded-2xl bg-indigo-50/70 ring-2 ring-indigo-600/30 flex items-center justify-between cursor-pointer relative overflow-hidden group shadow-sm">
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md shadow-indigo-500/30 group-hover:scale-110 transition-transform">
-                        ✨
+                        COMBO
                       </div>
                       <div>
                         <div class="flex items-center gap-1.5">
@@ -536,7 +643,7 @@
           </div>
 
           <button onclick="salvarPet()" class="shimmer-btn w-full mt-4 bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 text-white py-4 rounded-2xl font-extrabold text-sm shadow-lg shadow-indigo-600/30 hover:from-indigo-700 hover:to-violet-700 transition-all card-touch stagger-3">
-            Escolher Data e Horário →
+            Escolher data e horário
           </button>
         </div>
 
@@ -552,7 +659,7 @@
                 </button>
                 <h2 class="font-heading text-xl font-black text-slate-800 ml-1">Data & Horário</h2>
               </div>
-              <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600" id="chipPetSelecionado">🐾 Pet</span>
+              <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600" id="chipPetSelecionado">Pet</span>
             </div>
             
             <div class="mb-3 stagger-2">
@@ -583,13 +690,15 @@
                 <span id="txtResumoAgendamento" class="font-bold text-indigo-600 text-[11px]">Escolha um horário acima</span>
               </div>
 
+              <span id="avisoDataBloqueada" class="hidden block mt-2 text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-2.5 py-2"></span>
+
               <span id="errHorario" class="text-[--bad] text-xs hidden mt-1 font-bold">Por favor, clique em um dos horários disponíveis acima.</span>
             </div>
           </div>
 
           <button id="btnConfirmarAgendamento" onclick="finalizar()" class="shimmer-btn w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-black text-sm py-4 rounded-2xl shadow-lg shadow-emerald-500/25 mt-3 transition-all card-touch flex items-center justify-center gap-2 stagger-4">
             <span>Confirmar Agendamento</span>
-            <span>✨</span>
+            <span>Confirmar</span>
           </button>
         </div>
 
@@ -598,7 +707,7 @@
           
           <div class="w-full mt-2">
             <div class="w-16 h-16 bg-emerald-50 border border-emerald-100 rounded-3xl flex items-center justify-center mx-auto mb-3 shadow-inner scale-in">
-              <span class="text-3xl animate-pulse">🎉</span>
+              <span class="font-heading text-2xl font-bold">OK</span>
             </div>
             <h2 class="font-heading text-2xl font-black text-slate-800 tracking-tight">Horário Garantido!</h2>
             <p class="text-slate-400 text-xs mt-0.5">O atendimento do seu pet já está na nossa agenda oficial.</p>
@@ -625,18 +734,22 @@
             </div>
 
             <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500">
-              <span>Status: <strong class="text-emerald-600 font-bold">✓ Confirmado</strong></span>
-              <span class="text-[10px] text-slate-400">Lava Pet Spa 🛁</span>
+              <span>Status: <strong class="text-emerald-600 font-bold">Confirmado</strong></span>
+              <span class="text-[10px] text-slate-400" id="cEmpresa" data-empresa-nome>Lava Pet Spa</span>
             </div>
+
+            <!-- Sinal via Pix (só aparece se o gestor configurou a chave) -->
+            <div id="boxPixSinal" class="hidden pt-2 border-t border-dashed border-slate-300 bg-white/60 rounded-xl p-2.5"></div>
           </div>
           
           <div class="w-full space-y-2">
             <button onclick="compartilharWhatsApp()" class="w-full bg-emerald-50 text-emerald-700 py-3 rounded-2xl font-bold text-xs hover:bg-emerald-100 transition-all card-touch flex items-center justify-center gap-1.5 border border-emerald-200">
-              <span>💬 Salvar Comprovante no WhatsApp</span>
+              <span>Enviar comprovante pelo WhatsApp</span>
             </button>
             <button onclick="novoAgendamentoCliente()" class="w-full bg-slate-100 text-slate-600 py-3 rounded-2xl font-bold text-xs hover:bg-slate-200 transition-all card-touch">
               Fazer Outro Agendamento
             </button>
+            <p class="text-center text-[9px] text-slate-400 pt-1">Sujeito à <a href="privacidade.html" target="_blank" class="underline">Política de Privacidade</a>.</p>
           </div>
 
         </div>

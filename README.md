@@ -1,68 +1,133 @@
-# Lava Pet 🛁
+# Lava Pet - Agenda digital para banho e tosa
 
-Uma plataforma web moderna e fluida para agendamento e gestão de serviços pet. Conta com experiência mobile-first, física orbital, iluminação dinâmica (spotlight lamp), alternador de modo claro/escuro interativo e portal administrativo seguro e separado para o proprietário do petshop.
+Plataforma web de agendamento e gestão para pet shops, banho e tosa e profissionais de estética animal. O cliente agenda sozinho pela página da empresa, sem conflitos de horário, e o gestor acompanha toda a operação em um painel próprio.
 
-🌐 **Ambientes Disponíveis:**
-- **Portal do Cliente:** `https://lavapet.vercel.app/`
-- **Portal do Gestor / Dono:** `https://lavapet.vercel.app/admin`
+## Ambientes (Vercel)
 
----
-
-## ✨ Funcionalidades
-
-### 🐾 Portal do Cliente
-- 💡 **Luminária Interativa**: Puxe a cordinha ou clique na luminária para acender/apagar a luz e alternar entre **Modo Claro ☀️** e **Modo Escuro 🌙**.
-- 💫 **Animação Orbital Cinética**: Anel pontilhado (`stroke-dasharray: 2 7`) com rotação física no splash screen e no carregamento de horários.
-- 👤 **Identificação Rápida**: Nome e WhatsApp com formatação automática de máscara `(00) 00000-0000`.
-- 🐕 **Cadastro do Pet & Mascote Reativo**: Emoji do mascote reage conforme você digita o nome do pet.
-- 🛁 **Seleção de Serviços VIP**: Cards táteis de Banho, Tosa e Combo com efeitos de luz.
-- 📅 **Pílulas de Dias Rápidos**: Seleção ágil de datas (`Hoje`, `Amanhã`, dias da semana) e calendário integrado.
-- ⏰ **Horários em Tempo Real**: 9 horários disponíveis por dia com atualização de status.
-- 🎟️ **Comprovante em Ticket VIP**: Protocolo digital `#PET-XXXX` com recorte lateral e chuva comemorativa de confetes em Canvas (60 FPS).
-- 💬 **Compartilhamento no WhatsApp**: Botão direto para salvar ou enviar o comprovante com todos os detalhes.
-
-### 📋 Portal do Gestor / Dono (`/admin`)
-- 🔒 **Autenticação Criptografada**: Login protegido por hash criptográfico SHA-256 (Web Crypto API) e tokens de sessão com expiração automática.
-- 📊 **Métricas Diárias em Tempo Real**: Total de pets agendados no dia, faturamento previsto em R$ calculado automaticamente, atendimentos concluídos e próximo pet da fila.
-- 📅 **Agenda Real Sem Mocks**: Exibe estritamente os agendamentos reais recebidos pelo site ou cadastrados no balcão.
-- 💬 **1-Clique para WhatsApp**: Disparo de mensagem pré-formatada para confirmar o atendimento com o tutor.
-- ⚡ **Gestão de Atendimento**: Botões para marcar "Em Atendimento" e "Concluído".
-- ➕ **Agendamento Manual / Balcão**: Modal para cadastrar clientes que ligam ou comparecem presencialmente.
-- 🔔 **Alertas Sonoros & Push**: Sintetizador harmônico Web Audio API e notificações no PC/celular a cada novo agendamento.
+| Ambiente | URL |
+|---|---|
+| Portal do cliente | `https://lavapet.vercel.app/` |
+| Painel do gestor | `https://lavapet.vercel.app/admin` |
+| Landing comercial e planos | `https://lavapet.vercel.app/sobre` |
+| Política de privacidade | `https://lavapet.vercel.app/privacidade` |
 
 ---
 
-## 🛠️ Tecnologias
+## Funcionalidades
 
-- **Frontend Cliente**: HTML5, Tailwind CSS, JavaScript Vanilla (ES6+), Web Audio API, Web Animations API, Canvas Confetti.
-- **Frontend Gestor**: Dashboard Dark SaaS Glassmorphism, Web Crypto API (SHA-256), Web Notifications API.
-- **Backend & Armazenamento**: Google Apps Script (Google Sheets API) + Repositório local sincronizado.
-- **Deploy**: Vercel com rotas limpas (`/` para cliente, `/admin` para gestor).
+### Portal do cliente (`/`)
+- Fluxo em três passos: identificação, pet e serviço, data e horário.
+- Interface mobile-first com tema claro/escuro (luminária interativa).
+- Serviços, preços e horários definidos na configuração da empresa, sem tocar em código.
+- Horários ocupados, dias fechados da semana e datas bloqueadas aparecem como indisponíveis.
+- Consentimento LGPD obrigatório antes de coletar qualquer dado.
+- Comprovante digital `#PET-XXXX` com sinal de reserva via Pix (chave copiável) quando configurado.
+- Envio do comprovante por WhatsApp com mensagem personalizada da empresa.
+
+### Painel do gestor (`/admin`)
+- Primeiro acesso cria as credenciais do gestor (e-mail + senha com hash SHA-256). Não existe senha padrão.
+- Sessão com expiração automática (8 horas) e alteração de senha nas configurações.
+- Métricas do dia, agenda real (site + balcão) e status de atendimento: Em Atendimento, Concluído, Reabrir.
+- Confirmação por WhatsApp com 1 clique e botão "Lembrete" por agendamento.
+- Agendamento manual (balcão/telefone) respeitando os horários livres.
+- Relatório do dia em CSV e backup completo em JSON.
+- Configurações da empresa: nome, slogan, WhatsApp, cor da marca, horários, serviços (nome, descrição, preço, duração), bloqueio de datas, chave Pix, sinal (%) e templates de mensagem.
+- Exportar dados e "Apagar Dados (LGPD)".
+
+### Camada de configuração (`config.js`)
+- White-label: o que o gestor define no painel é aplicado a todas as telas (portal, comprovante, WhatsApp, landing e política de privacidade).
+- Dados salvos em `localStorage` e agendamentos sincronizados com Google Apps Script (Google Sheets).
+
+### Rotas (`vercel.json`)
+`/` e `/agendar` apontam para o portal do cliente; `/admin` e `/gestor` para o painel; `/sobre` para a landing; `/privacidade` para a política.
+
+## Tecnologias
+
+- HTML5, Tailwind CSS, JavaScript Vanilla (ES6+), Web Audio API, Web Animations API, Canvas.
+- Web Crypto API (SHA-256) e Web Notifications API no painel do gestor.
+- Google Apps Script (Google Sheets) para sincronização de agendamentos.
+- Deploy: Vercel (principal) com rotas limpas, GitHub Pages (alternativa).
 
 ---
 
-## 🔐 Acesso Administrativo Inicial
+## Primeiro acesso ao painel
 
-- **URL**: `/admin` ou `/gestor`
-- **E-mail**: `admin@lavapet.com`
-- **Senha**: `admin123`
+1. Abra `/admin`.
+2. Defina o e-mail e a senha do gestor (mínimo de 6 caracteres). Não existe senha padrão.
+3. O assistente de configuração abre automaticamente: preencha nome, WhatsApp, horários, serviços e chave Pix.
+4. Credenciais e configuração ficam salvas no navegador usado pelo gestor.
+
+## Executar localmente
+
+Abra `preview.html` diretamente no navegador ou sirva a pasta:
+
+```bash
+python -m http.server 8080
+# ou
+npx serve .
+```
+
+- Portal do cliente: `http://localhost:8080/preview.html`
+- Painel do gestor: `http://localhost:8080/admin.html`
+
+## Teste automático
+
+Abra `teste-automatico.html` no navegador: executa verificações da camada de configuração (config, bloqueios, horários livres, templates, máscaras) e exibe o resultado PASS/FAIL.
 
 ---
 
-## 📦 Estrutura do Projeto
+## Deploy
+
+### Vercel (principal)
+
+O projeto está conectado à Vercel: cada push na branch `main` gera um deploy automático.
+
+```bash
+git add .
+git commit -m "mensagem do commit"
+git push origin main
+```
+
+Alternativa por CLI:
+
+```bash
+npx vercel --prod
+```
+
+### GitHub Pages (alternativa)
+
+1. No GitHub: **Settings → Pages → Source: GitHub Actions**.
+2. O workflow `.github/workflows/deploy.yml` publica a aplicação a cada push em `main`.
+3. URL final: `https://4nten0r.github.io/lavapet/` (rotas limpas não se aplicam; o painel fica em `/admin.html`).
+
+---
+
+## Limitações conhecidas (roadmap para SaaS)
+
+- Configuração e agendamentos vivem por dispositivo (`localStorage`): multiempresa multi-dispositivo exige backend próprio.
+- Lembretes automáticos agendados e pagamento online exigem integração server-side.
+- Evolução recomendada: Supabase/Firebase (dados e autenticação), API oficial de WhatsApp e cobrança por plano.
+
+---
+
+## Estrutura do projeto
 
 ```
 lavapet/
-├── preview.html     # Portal do Cliente (Experiência Mobile First)
-├── script.js        # Motor de regras, física, temas e agendamento do cliente
-├── admin.html       # Portal Administrativo do Dono do Petshop
-├── admin.js         # Motor de autenticação, agenda real e métricas
-├── vercel.json      # Roteamento limpo no Vercel (/ e /admin)
-└── README.md        # Documentação do projeto
+├── landing.html            # Página comercial (planos Essencial, Profissional e Premium)
+├── preview.html            # Portal do cliente
+├── script.js               # Motor do portal (fluxo, horários, Pix, white-label)
+├── admin.html              # Painel do gestor
+├── admin.js                # Autenticação, agenda, configurações e relatórios
+├── config.js               # Camada de configuração white-label compartilhada
+├── privacidade.html        # Política de privacidade (LGPD)
+├── teste-automatico.html   # Verificação automática da camada de configuração
+├── vercel.json             # Rotas limpas do deploy
+└── .github/workflows/deploy.yml  # Deploy alternativo (GitHub Pages)
 ```
 
 ---
 
-## 📄 Licença e Autoria
+## Licença e autoria
 
 Desenvolvido para **Lava Pet** por [4nten0r](https://github.com/4nten0r).
