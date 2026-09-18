@@ -70,9 +70,7 @@ npx serve .
 - Portal do cliente: `http://localhost:8080/preview.html`
 - Painel do gestor: `http://localhost:8080/admin.html`
 
-## Teste automático
 
-Abra `teste-automatico.html` no navegador: executa verificações da camada de configuração (config, bloqueios, horários livres, templates, máscaras) e exibe o resultado PASS/FAIL.
 
 ---
 
@@ -97,7 +95,7 @@ npx vercel --prod
 ### GitHub Pages (alternativa)
 
 1. No GitHub: **Settings → Pages → Source: GitHub Actions**.
-2. O workflow `.github/workflows/deploy.yml` publica a aplicação a cada push em `main`.
+2. Publique os arquivos estáticos da raiz na branch ou serviço escolhido.
 3. URL final: `https://4nten0r.github.io/lavapet/` (rotas limpas não se aplicam; o painel fica em `/admin.html`).
 
 ---
@@ -121,9 +119,8 @@ lavapet/
 ├── admin.js                # Autenticação, agenda, configurações e relatórios
 ├── config.js               # Camada de configuração white-label compartilhada
 ├── privacidade.html        # Política de privacidade (LGPD)
-├── teste-automatico.html   # Verificação automática da camada de configuração
 ├── vercel.json             # Rotas limpas do deploy
-└── .github/workflows/deploy.yml  # Deploy alternativo (GitHub Pages)
+└── DOCUMENTACAO.md         # Visão técnica dos arquivos e fluxos
 ```
 
 ---

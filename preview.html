@@ -142,18 +142,15 @@
     }
 
     /* Transições entre telas fluidas */
-    .screen {
-      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
     .screen.hidden-screen {
-      opacity: 0;
+      opacity: 0 !important;
       pointer-events: none;
       position: absolute;
       visibility: hidden;
       transform: translateY(14px) scale(0.98);
     }
     .screen.active-screen {
-      opacity: 1;
+      opacity: 1 !important;
       pointer-events: auto;
       position: relative;
       visibility: visible;
@@ -161,10 +158,21 @@
     }
 
     /* Animação em cascata dos elementos internos da tela */
-    .active-screen .stagger-1 { animation: staggerIn 0.4s 0.04s both cubic-bezier(0.16, 1, 0.3, 1); }
-    .active-screen .stagger-2 { animation: staggerIn 0.4s 0.10s both cubic-bezier(0.16, 1, 0.3, 1); }
-    .active-screen .stagger-3 { animation: staggerIn 0.4s 0.18s both cubic-bezier(0.16, 1, 0.3, 1); }
-    .active-screen .stagger-4 { animation: staggerIn 0.4s 0.24s both cubic-bezier(0.16, 1, 0.3, 1); }
+    .active-screen .stagger-1,
+    .active-screen .stagger-2,
+    .active-screen .stagger-3,
+    .active-screen .stagger-4 {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .active-screen button,
+    .active-screen input,
+    .active-screen a {
+      visibility: visible !important;
+      transition: none !important;
+    }
 
     @keyframes staggerIn {
       from { opacity: 0; transform: translateY(12px); }
@@ -377,10 +385,9 @@
     #mainCard > header .font-heading { color: var(--lavapet-wine); font-family: Georgia, serif; font-size: 30px; font-weight: 400; }
     #mainCard > header .text-indigo-500 { color: var(--lavapet-muted); letter-spacing: 2px; }
     #badgeTema { color: var(--lavapet-wine); background: var(--lavapet-rose); border-color: #e4c9c8; }
+    #badgeTema { transition: none !important; }
 
     #mainCard > div.flex-1 { overflow: visible; }
-    #mainCard .lamp-wire, #mainCard .lamp-head, #mainCard .lamp-beam, #dicaLampada { display: none; }
-
     #progressBar { max-width: 540px; margin: 0 auto; padding-top: 28px; }
     #progressBar .bg-indigo-500, #progressFill { background: var(--lavapet-wine) !important; }
     #progressBar [id^="step"] { background: var(--lavapet-rose); color: var(--lavapet-wine); }
@@ -452,9 +459,9 @@
 
       <!-- Badge Pulsante de Modo Claro / Escuro com dica -->
       <div class="flex items-center gap-2">
-        <span id="badgeTema" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 transition-colors">
+        <button type="button" id="badgeTema" onclick="alternarLuzETema()" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 cursor-pointer">
           Modo claro
-        </span>
+        </button>
       </div>
     </header>
 
