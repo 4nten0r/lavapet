@@ -1,3 +1,4 @@
+import json
 import os
 import sqlite3
 import uuid
@@ -53,6 +54,37 @@ def init_db():
             role TEXT NOT NULL,
             petshop_id TEXT,
             selected_petshop_id TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (petshop_id) REFERENCES petshops(id)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS petshop_settings (
+            id TEXT PRIMARY KEY,
+            petshop_id TEXT NOT NULL UNIQUE,
+            config_json TEXT NOT NULL,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (petshop_id) REFERENCES petshops(id)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS appointments (
+            id TEXT PRIMARY KEY,
+            petshop_id TEXT NOT NULL,
+            data TEXT NOT NULL,
+            hora TEXT NOT NULL,
+            pet TEXT NOT NULL,
+            tutor TEXT NOT NULL,
+            telefone TEXT,
+            servico TEXT,
+            preco REAL,
+            status TEXT,
+            origem TEXT,
+            codigo TEXT,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (petshop_id) REFERENCES petshops(id)
         )
@@ -346,6 +378,164 @@ def users():
         return jsonify({"error": str(exc)}), 409
 
     return jsonify({"ok": True, "user": {"id": user_id, "name": name, "email": email, "role": role, "petshop_id": petshop_id}}), 201
+
+
+@app.route("/api/config", methods=["GET", "POST"])
+def config_endpoint():
+    user = get_current_user_from_request()
+    if not user:
+        return jsonify({"error": "Token inválido."}), 401
+
+    petshop_id = request.args.get("petshop_id") or (request.get_json(silent=True) or {}).get("petshop_id") or user.get("selected_petshop_id") or user.get("petshop_id")
+    if not petshop_id:
+        return jsonify({"error": "petshop_id obrigatório."}), 400
+
+    if user["role"] != "super_admin" and user["petshop_id"] != petshop_id:
+        return jsonify({"error": "Sem acesso a este petshop."}), 403
+
+    if request.method == "GET":
+        conn = get_db()
+        row = conn.execute("SELECT * FROM petshop_settings WHERE petshop_id = ?", (petshop_id,)).fetchone()
+        conn.close()
+        default_cfg = {
+            "configurado": False,
+            "nome": "Lava Pet",
+            "slogan": "Estética e Conforto Animal",
+            "whatsapp": "",
+            "corPrimaria": "#84364c",
+            "horarios": ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"],
+            "diasFechados": [0],
+            "pix": {"chave": "", "nome": "", "sinal": 30},
+            "servicos": [
+                {"nome": "Banho", "descricao": "Banho hidratante com shampoo neutro", "preco": 50, "duracao": 60},
+                {"nome": "Tosa", "descricao": "Tosa higiênica ou geral", "preco": 60, "duracao": 60},
+                {"nome": "Banho e Tosa", "descricao": "Combo completo com perfume", "preco": 90, "duracao": 90}
+            ],
+            "templates": {
+                "confirmacao": "Olá {tutor}! Agendamento confirmado: {pet} - {servico} em {data} às {hora}. Código {codigo}. {empresa}",
+                "lembrete": "Olá {tutor}! Lembrete: {pet} tem {servico} amanhã às {hora}. {empresa}"
+            }
+        }
+        if not row:
+            return jsonify({"config": default_cfg})
+        return jsonify({"config": json.loads(row["config_json"])})
+
+    data = request.get_json(silent=True) or {}
+    config = data.get("config")
+    if not isinstance(config, dict):
+        return jsonify({"error": "Configuração inválida."}), 400
+
+    conn = get_db()
+    row = conn.execute("SELECT id FROM petshop_settings WHERE petshop_id = ?", (petshop_id,)).fetchone()
+    payload = json.dumps(config, ensure_ascii=False)
+    if row:
+        conn.execute(
+            "UPDATE petshop_settings SET config_json = ?, updated_at = ? WHERE petshop_id = ?",
+            (payload, datetime.utcnow().isoformat(), petshop_id),
+        )
+    else:
+        conn.execute(
+            "INSERT INTO petshop_settings (id, petshop_id, config_json, updated_at) VALUES (?, ?, ?, ?)",
+            (str(uuid.uuid4()), petshop_id, payload, datetime.utcnow().isoformat()),
+        )
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "petshop_id": petshop_id, "config": config})
+
+
+@app.route("/api/appointments", methods=["GET", "POST"])
+def appointments():
+    user = get_current_user_from_request()
+    if not user:
+        return jsonify({"error": "Token inválido."}), 401
+
+    petshop_id = request.args.get("petshop_id") or (request.get_json(silent=True) or {}).get("petshop_id") or user.get("selected_petshop_id") or user.get("petshop_id")
+    if not petshop_id:
+        return jsonify({"error": "petshop_id obrigatório."}), 400
+
+    if user["role"] != "super_admin" and user["petshop_id"] != petshop_id:
+        return jsonify({"error": "Sem acesso a este petshop."}), 403
+
+    if request.method == "GET":
+        conn = get_db()
+        rows = conn.execute(
+            "SELECT * FROM appointments WHERE petshop_id = ? ORDER BY data ASC, hora ASC",
+            (petshop_id,),
+        ).fetchall()
+        conn.close()
+        return jsonify({"appointments": [dict(row) for row in rows]})
+
+    data = request.get_json(silent=True) or {}
+    required = ["data", "hora", "pet", "tutor", "servico"]
+    missing = [field for field in required if not data.get(field)]
+    if missing:
+        return jsonify({"error": "Campos obrigatórios ausentes: " + ", ".join(missing)}), 400
+
+    appointment_id = str(uuid.uuid4())
+    conn = get_db()
+    conn.execute(
+        """
+        INSERT INTO appointments (id, petshop_id, data, hora, pet, tutor, telefone, servico, preco, status, origem, codigo, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            appointment_id,
+            petshop_id,
+            data.get("data"),
+            data.get("hora"),
+            data.get("pet"),
+            data.get("tutor"),
+            data.get("telefone") or "",
+            data.get("servico"),
+            float(data.get("preco") or 0),
+            data.get("status") or "Confirmado",
+            data.get("origem") or "SaaS",
+            data.get("codigo") or f"PET-{appointment_id[:6].upper()}",
+            datetime.utcnow().isoformat(),
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "appointment": {"id": appointment_id, "petshop_id": petshop_id}}), 201
+
+
+@app.route("/api/appointments/<appointment_id>", methods=["PUT", "DELETE"])
+def appointment_by_id(appointment_id):
+    user = get_current_user_from_request()
+    if not user:
+        return jsonify({"error": "Token inválido."}), 401
+
+    conn = get_db()
+    existing = conn.execute("SELECT * FROM appointments WHERE id = ?", (appointment_id,)).fetchone()
+    if not existing:
+        conn.close()
+        return jsonify({"error": "Agendamento não encontrado."}), 404
+
+    if user["role"] != "super_admin" and user["petshop_id"] != existing["petshop_id"]:
+        conn.close()
+        return jsonify({"error": "Sem acesso a este petshop."}), 403
+
+    if request.method == "DELETE":
+        conn.execute("DELETE FROM appointments WHERE id = ?", (appointment_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"ok": True, "deleted": appointment_id})
+
+    data = request.get_json(silent=True) or {}
+    update_fields = []
+    values = []
+    for field in ["data", "hora", "pet", "tutor", "telefone", "servico", "preco", "status", "origem", "codigo"]:
+        if field in data:
+            update_fields.append(f"{field} = ?")
+            values.append(data[field])
+    if not update_fields:
+        conn.close()
+        return jsonify({"error": "Nenhum campo para atualizar."}), 400
+    values.append(appointment_id)
+    conn.execute(f"UPDATE appointments SET {', '.join(update_fields)} WHERE id = ?", values)
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "updated": appointment_id})
 
 
 @app.before_request

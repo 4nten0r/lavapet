@@ -75,6 +75,7 @@ async function realizarLogin(e) {
 
     msgErro.classList.add('hidden');
     await carregarPetshopsDisponiveis();
+    await carregarConfigDoPetshop();
     mostrarDashboard();
   } catch (err) {
     console.error('Erro na autenticação:', err);
@@ -129,10 +130,24 @@ function renderizarSeletorPetshop() {
           body: JSON.stringify({ petshop_id: petshopId }),
         });
         LAVAPET_AUTH_STATE.selectedPetshopId = petshopId;
+        await carregarConfigDoPetshop();
+        await carregarAgendamentosReais();
       } catch (err) {
         console.error('Erro ao trocar petshop:', err);
       }
     });
+  }
+}
+
+async function carregarConfigDoPetshop() {
+  if (!LAVAPET_AUTH_STATE.token || !LAVAPET_AUTH_STATE.selectedPetshopId) return;
+  try {
+    const data = await apiFetch(`/config?petshop_id=${encodeURIComponent(LAVAPET_AUTH_STATE.selectedPetshopId)}`);
+    const cfg = data.config || obterConfig();
+    localStorage.setItem(LAVAPET_CONFIG_KEY, JSON.stringify(cfg));
+    aplicarIdentidadeVisual(cfg);
+  } catch (err) {
+    console.error('Erro ao carregar configuração do petshop:', err);
   }
 }
 
@@ -286,6 +301,30 @@ async function carregarAgendamentosReais() {
     locais = [];
   }
 
+  if (LAVAPET_AUTH_STATE.token && LAVAPET_AUTH_STATE.selectedPetshopId) {
+    try {
+      const data = await apiFetch(`/appointments?petshop_id=${encodeURIComponent(LAVAPET_AUTH_STATE.selectedPetshopId)}`);
+      agendamentosReais = (data.appointments || []).map((item) => ({
+        ...item,
+        id: String(item.id),
+        data: normalizarDataAgenda(item.data),
+        hora: normalizarHoraAgenda(item.hora),
+        pet: item.pet || 'Agendamento',
+        tutor: item.tutor || 'Cliente',
+        telefone: item.telefone || '',
+        servico: item.servico || 'Serviço não informado',
+        preco: Number(item.preco) || 0,
+        status: item.status || 'Confirmado',
+        origem: item.origem || 'SaaS'
+      }));
+      localStorage.setItem('lavapet_real_appointments', JSON.stringify(agendamentosReais));
+      renderizarListaFiltrada();
+      return;
+    } catch (e) {
+      console.warn('Falha ao carregar agenda do backend, usando fallback local:', e);
+    }
+  }
+
   const apiUrl = obterApiUrl();
   if (!apiUrl) {
     agendamentosReais = locais;
@@ -299,15 +338,6 @@ async function carregarAgendamentosReais() {
     if (token) url.searchParams.set('token', token);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const resposta = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    const dados = await resposta.json();
-    if (!Array.isArray(dados)) throw new Error('Resposta inválida da agenda remota.');
-
-    agendamentosReais = dados.map((item, indice) => {
-      const data = normalizarDataAgenda(item.data);
-      const hora = normalizarHoraAgenda(item.hora);
-      const local = locais.find(a => a.data === data && a.hora === hora) || {};
       return {
         ...item,
         ...local,
@@ -350,16 +380,33 @@ function salvarAgendamentosReais() {
   renderizarListaFiltrada();
 }
 
-function alterarStatus(id, novoStatus) {
+async function alterarStatus(id, novoStatus) {
   const index = agendamentosReais.findIndex(a => a.id === id);
   if (index !== -1) {
     agendamentosReais[index].status = novoStatus;
+    if (LAVAPET_AUTH_STATE.token && LAVAPET_AUTH_STATE.selectedPetshopId) {
+      try {
+        await apiFetch(`/appointments/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ status: novoStatus }),
+        });
+      } catch (err) {
+        console.error('Erro ao atualizar status no backend:', err);
+      }
+    }
     salvarAgendamentosReais();
   }
 }
 
-function excluirAgendamento(id) {
+async function excluirAgendamento(id) {
   if (confirm("Deseja realmente remover este agendamento da agenda?")) {
+    if (LAVAPET_AUTH_STATE.token && LAVAPET_AUTH_STATE.selectedPetshopId) {
+      try {
+        await apiFetch(`/appointments/${id}`, { method: 'DELETE' });
+      } catch (err) {
+        console.error('Erro ao deletar agendamento no backend:', err);
+      }
+    }
     agendamentosReais = agendamentosReais.filter(a => a.id !== id);
     salvarAgendamentosReais();
   }
@@ -840,7 +887,7 @@ function desbloquearData(dataISO) {
 }
 
 // Salvar todas as configurações do formulário
-function salvarConfiguracoesEmpresa(e) {
+async function salvarConfiguracoesEmpresa(e) {
   if (e) e.preventDefault();
   const cfg = obterConfig();
 
@@ -861,7 +908,6 @@ function salvarConfiguracoesEmpresa(e) {
   cfg.templates.confirmacao = document.getElementById('confTemplateConfirmacao').value.trim() || CONFIG_PADRAO.templates.confirmacao;
   cfg.templates.lembrete = document.getElementById('confTemplateLembrete').value.trim() || CONFIG_PADRAO.templates.lembrete;
 
-  // Coletar serviços dos inputs
   const linhas = document.querySelectorAll('#listaServicosConfig .srv-input');
   const servicos = [];
   linhas.forEach(inp => {
@@ -875,6 +921,18 @@ function salvarConfiguracoesEmpresa(e) {
 
   cfg.configurado = true;
   salvarConfig(cfg);
+
+  if (LAVAPET_AUTH_STATE.token && LAVAPET_AUTH_STATE.selectedPetshopId) {
+    try {
+      await apiFetch('/config', {
+        method: 'POST',
+        body: JSON.stringify({ petshop_id: LAVAPET_AUTH_STATE.selectedPetshopId, config: cfg }),
+      });
+    } catch (err) {
+      console.error('Erro ao persistir configuração no backend:', err);
+    }
+  }
+
   aplicarIdentidadeVisual(cfg);
   fecharConfiguracoes();
   carregarAgendamentosReais();
