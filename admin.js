@@ -2,9 +2,6 @@
 // LAVA PET - PORTAL DO GESTOR & ENGINE ADMINISTRATIVA
 // ===================================================
 
-// CONFIGURAÇÃO DO BACKEND GOOGLE APPS SCRIPT
-const API_URL = "https://script.google.com/macros/s/AKfycbwE8I4T1FtPBEt7VZ6jJ_06mRBuQPxSKMQE5USswJ2jvnEErhtN5oQAB3cdjiM788wDVw/exec";
-
 // ESTADO GLOBAL DO PAINEL DO DONO
 let agendamentosReais = [];
 let statusFiltroAtual = 'todos';
@@ -535,10 +532,13 @@ function salvarAgendamentoManual(e) {
   salvarAgendamentosReais();
 
   // Enviar também para o Google Sheets em segundo plano
-  fetch(API_URL, {
+  const apiUrl = obterApiUrl();
+  if (apiUrl) fetch(apiUrl, {
     method: "POST",
     mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({
+      token: obterApiToken(),
       pet: pet + (raca ? ` (${raca})` : ""),
       cliente: `${tutor} / ${telefone}`,
       servico,

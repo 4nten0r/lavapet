@@ -70,6 +70,18 @@ npx serve .
 - Portal do cliente: `http://localhost:8080/preview.html`
 - Painel do gestor: `http://localhost:8080/admin.html`
 
+## Banco por planilha
+
+Para uma implantação pequena, use uma planilha exclusiva por pet shop e o backend em `apps-script/Code.gs`:
+
+1. Crie uma planilha e copie o ID da URL.
+2. No Apps Script, cole `apps-script/Code.gs` e defina `SHEET_ID`, `SHEET_NAME` e `API_TOKEN` nas propriedades do projeto.
+3. Execute `configurar()` uma vez e implante como aplicativo da Web.
+4. Preencha `api-config.js` com a URL publicada e o mesmo token.
+5. Publique os arquivos estáticos na Vercel.
+
+O token do frontend é público. Ele evita gravações acidentais, mas não substitui autenticação server-side; para múltiplos clientes, alta concorrência ou dados sensíveis, migre para banco e API próprios.
+
 
 
 ---

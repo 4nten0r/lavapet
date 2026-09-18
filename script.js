@@ -10,9 +10,6 @@ let dataSelecionada = "";
 let lampOn = true; // true = Luz Acesa (Modo Claro) | false = Luz Apagada (Modo Escuro)
 let ultimoAgendamento = null;
 
-// 👉 URL DO SEU GOOGLE APPS SCRIPT (MANTIDA)
-const API_URL = "https://script.google.com/macros/s/AKfycbwE8I4T1FtPBEt7VZ6jJ_06mRBuQPxSKMQE5USswJ2jvnEErhtN5oQAB3cdjiM788wDVw/exec";
-
 // ===================================================
 //   1. UTILITÁRIOS DE DATA LOCAL & SINTETIZADOR DE ÁUDIO
 // ===================================================
@@ -628,11 +625,17 @@ async function sincronizarHorariosAssincrono() {
     gerarHorarios();
   } catch (e) {}
 
+  const apiUrl = obterApiUrl();
+  if (!apiUrl) return;
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 2500);
 
   try {
-    const res = await fetch(API_URL, { signal: controller.signal });
+    const url = new URL(apiUrl);
+    const token = obterApiToken();
+    if (token) url.searchParams.set('token', token);
+    const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
     const dados = await res.json();
     
@@ -710,10 +713,13 @@ async function finalizar() {
     let nomeFormatadoPet = petDados.nome + (petDados.raca ? ` (${petDados.raca})` : "");
     let nomeCliente = tutorDados.nome + " / " + tutorDados.telefone;
 
-    fetch(API_URL, {
+    const apiUrl = obterApiUrl();
+    if (apiUrl) fetch(apiUrl, {
       method: "POST",
       mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
+        token: obterApiToken(),
         pet: nomeFormatadoPet,
         cliente: nomeCliente,
         servico: petDados.servico,

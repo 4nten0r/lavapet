@@ -7,6 +7,15 @@
 const LAVAPET_CONFIG_KEY = 'lavapet_empresa_config';
 const LAVAPET_BLOQUEIOS_KEY = 'lavapet_bloqueios';
 
+// A URL e o token são fornecidos pelo api-config.js de cada instalação.
+function obterApiUrl() {
+  return String(window.LAVAPET_API_URL || '').trim();
+}
+
+function obterApiToken() {
+  return String(window.LAVAPET_API_TOKEN || '').trim();
+}
+
 const CONFIG_PADRAO = {
   configurado: false,
   nome: 'Lava Pet',
