@@ -12,21 +12,40 @@ let audioCtx = null;
 //   1. SEGURANÇA & AUTENTICAÇÃO (WEB CRYPTO SHA-256)
 // ===================================================
 
-const LAVAPET_AUTH_KEY = 'lavapet_admin_auth';
-const LAVAPET_SESSION_KEY = 'lavapet_admin_session';
+const LAVAPET_API_BASE = 'http://127.0.0.1:5000/api';
+const LAVAPET_AUTH_STATE = {
+  token: null,
+  user: null,
+  petshops: [],
+  selectedPetshopId: null,
+};
 
-// Hash SHA-256 com salt por empresa
-async function hashSenha(senha) {
-  const cfg = obterConfig();
-  const salt = 'lavapet_' + (cfg.nome || 'spa').toLowerCase().replace(/\s+/g, '_') + '_2026';
-  const enc = new TextEncoder();
-  const data = enc.encode(senha + '_' + salt);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+async function apiFetch(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  if (LAVAPET_AUTH_STATE.token) {
+    headers.Authorization = `Bearer ${LAVAPET_AUTH_STATE.token}`;
+  }
+
+  const res = await fetch(`${LAVAPET_API_BASE}${path}`, {
+    ...options,
+    headers,
+  });
+
+  const text = await res.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch (e) {
+    payload = { error: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(payload?.error || 'Erro na requisição ao backend do SaaS.');
+  }
+
+  return payload;
 }
 
-// Login OU criação de acesso no primeiro uso (sem senha padrão de fábrica)
 async function realizarLogin(e) {
   e.preventDefault();
   const emailInput = document.getElementById('adminEmail').value.trim();
@@ -44,45 +63,77 @@ async function realizarLogin(e) {
   btn.disabled = true;
 
   try {
-    const credencial = JSON.parse(localStorage.getItem(LAVAPET_AUTH_KEY) || 'null');
-    const inputHash = await hashSenha(senhaInput);
+    const data = await apiFetch('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: emailInput, password: senhaInput }),
+    });
 
-    if (!credencial) {
-      // PRIMEIRO ACESSO: cria o acesso do gestor (onboarding)
-      const nova = { email: emailInput.toLowerCase(), hash: inputHash, criadoEm: new Date().toISOString() };
-      localStorage.setItem(LAVAPET_AUTH_KEY, JSON.stringify(nova));
-      msgErro.classList.add('hidden');
-      criarSessao(nova.email);
-      mostrarDashboard();
-      if (typeof abrirConfiguracoes === 'function') abrirConfiguracoes();
-      return;
-    }
+    LAVAPET_AUTH_STATE.token = data.token;
+    LAVAPET_AUTH_STATE.user = data.user;
+    LAVAPET_AUTH_STATE.petshops = data.petshops || [];
+    LAVAPET_AUTH_STATE.selectedPetshopId = data.user?.selected_petshop_id || null;
 
-    if (credencial.email.toLowerCase() === emailInput.toLowerCase() && credencial.hash === inputHash) {
-      criarSessao(credencial.email);
-      msgErro.classList.add('hidden');
-      mostrarDashboard();
-      if (!obterConfig().configurado && typeof abrirConfiguracoes === 'function') abrirConfiguracoes();
-    } else {
-      msgErro.classList.remove('hidden');
-      msgErro.innerText = 'E-mail ou senha incorretos.';
-    }
+    msgErro.classList.add('hidden');
+    await carregarPetshopsDisponiveis();
+    mostrarDashboard();
   } catch (err) {
     console.error('Erro na autenticação:', err);
     msgErro.classList.remove('hidden');
+    msgErro.innerText = err.message || 'E-mail ou senha incorretos.';
   } finally {
     btn.innerHTML = `<span>Entrar no Painel</span> <span>→</span>`;
     btn.disabled = false;
   }
 }
 
-function criarSessao(email) {
-  const sessionToken = {
-    token: 'tok_' + Math.random().toString(36).substring(2) + Date.now(),
-    email,
-    expiraEm: Date.now() + (8 * 60 * 60 * 1000)
-  };
-  sessionStorage.setItem(LAVAPET_SESSION_KEY, JSON.stringify(sessionToken));
+async function carregarPetshopsDisponiveis() {
+  if (!LAVAPET_AUTH_STATE.token) return;
+  try {
+    const data = await apiFetch('/petshops');
+    LAVAPET_AUTH_STATE.petshops = data.petshops || [];
+    const selected = LAVAPET_AUTH_STATE.user?.selected_petshop_id || LAVAPET_AUTH_STATE.petshops[0]?.id || null;
+    LAVAPET_AUTH_STATE.selectedPetshopId = selected;
+    renderizarSeletorPetshop();
+  } catch (err) {
+    console.error('Erro ao carregar petshops:', err);
+  }
+}
+
+function renderizarSeletorPetshop() {
+  const container = document.getElementById('petshopSelectorWrap');
+  if (!container) return;
+
+  if (!LAVAPET_AUTH_STATE.petshops.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const options = LAVAPET_AUTH_STATE.petshops
+    .map((petshop) => `<option value="${petshop.id}" ${petshop.id === LAVAPET_AUTH_STATE.selectedPetshopId ? 'selected' : ''}>${petshop.name}</option>`)
+    .join('');
+
+  container.innerHTML = `
+    <label class="block text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-1.5">Petshop</label>
+    <select id="petshopSelector" class="w-full rounded-xl border border-white/10 bg-slate-900/80 text-slate-100 text-xs p-2.5 outline-none">
+      ${options}
+    </select>
+  `;
+
+  const select = document.getElementById('petshopSelector');
+  if (select) {
+    select.addEventListener('change', async (event) => {
+      const petshopId = event.target.value;
+      try {
+        await apiFetch('/auth/select-petshop', {
+          method: 'POST',
+          body: JSON.stringify({ petshop_id: petshopId }),
+        });
+        LAVAPET_AUTH_STATE.selectedPetshopId = petshopId;
+      } catch (err) {
+        console.error('Erro ao trocar petshop:', err);
+      }
+    });
+  }
 }
 
 // Alterar senha nas configurações do gestor
@@ -125,24 +176,14 @@ function alternarVisibilidadeSenha() {
 }
 
 function verificarSessaoAtiva() {
-  const sessionStr = sessionStorage.getItem('lavapet_admin_session');
-  if (!sessionStr) return false;
-
-  try {
-    const session = JSON.parse(sessionStr);
-    if (Date.now() < session.expiraEm) {
-      return true;
-    } else {
-      sessionStorage.removeItem('lavapet_admin_session');
-      return false;
-    }
-  } catch (e) {
-    return false;
-  }
+  return Boolean(LAVAPET_AUTH_STATE.token);
 }
 
 function realizarLogout() {
-  sessionStorage.removeItem(LAVAPET_SESSION_KEY);
+  LAVAPET_AUTH_STATE.token = null;
+  LAVAPET_AUTH_STATE.user = null;
+  LAVAPET_AUTH_STATE.petshops = [];
+  LAVAPET_AUTH_STATE.selectedPetshopId = null;
   document.getElementById('dashboardScreen').classList.add('hidden');
   document.getElementById('authScreen').classList.remove('hidden');
 }
