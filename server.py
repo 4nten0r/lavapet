@@ -358,7 +358,7 @@ def users():
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
     role = (data.get("role") or "admin_petshop").strip().lower()
-    petshop_id = data.get("petshop_id")
+    petshop_id = data.get("petshop_id") or user.get("selected_petshop_id") or user.get("petshop_id")
 
     if not name or not email or len(password) < 6:
         return jsonify({"error": "Nome, email e senha com pelo menos 6 caracteres são obrigatórios."}), 400
@@ -378,6 +378,28 @@ def users():
         return jsonify({"error": str(exc)}), 409
 
     return jsonify({"ok": True, "user": {"id": user_id, "name": name, "email": email, "role": role, "petshop_id": petshop_id}}), 201
+
+
+@app.route("/api/auth/change-password", methods=["POST"])
+def change_password():
+    user = get_current_user_from_request()
+    if not user:
+        return jsonify({"error": "Token inválido."}), 401
+
+    data = request.get_json(silent=True) or {}
+    current_password = data.get("current_password") or ""
+    new_password = data.get("new_password") or ""
+    if len(new_password) < 6:
+        return jsonify({"error": "A nova senha precisa ter pelo menos 6 caracteres."}), 400
+    if not bcrypt.checkpw(current_password.encode("utf-8"), user["password_hash"].encode("utf-8")):
+        return jsonify({"error": "Senha atual incorreta."}), 400
+
+    password_hash = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    conn = get_db()
+    conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (password_hash, user["id"]))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
 
 
 @app.route("/api/config", methods=["GET", "POST"])

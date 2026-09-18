@@ -157,25 +157,18 @@ async function alterarSenhaGestor(e) {
   const atual = document.getElementById('confSenhaAtual').value;
   const nova = document.getElementById('confSenhaNova').value;
   const msg = document.getElementById('msgAlterarSenha');
-  const credencial = JSON.parse(localStorage.getItem(LAVAPET_AUTH_KEY) || 'null');
-  if (!credencial) return;
-  const hashAtual = await hashSenha(atual);
-  if (hashAtual !== credencial.hash) {
-    msg.innerText = 'Senha atual incorreta.';
+  try {
+    await apiFetch('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ current_password: atual, new_password: nova }),
+    });
+    msg.innerText = 'Senha alterada com sucesso.';
     msg.classList.remove('hidden');
-    return;
-  }
-  if (nova.length < 6) {
-    msg.innerText = 'A nova senha precisa de 6+ caracteres.';
+    document.getElementById('formAlterarSenha').reset();
+  } catch (err) {
+    msg.innerText = err.message;
     msg.classList.remove('hidden');
-    return;
   }
-  credencial.hash = await hashSenha(nova);
-  credencial.alteradaEm = new Date().toISOString();
-  localStorage.setItem(LAVAPET_AUTH_KEY, JSON.stringify(credencial));
-  msg.innerText = 'Senha alterada com sucesso.';
-  msg.classList.remove('hidden');
-  document.getElementById('formAlterarSenha').reset();
 }
 
 function alternarVisibilidadeSenha() {
@@ -650,7 +643,7 @@ function atualizarHorariosManual() {
   ).join('');
 }
 
-function salvarAgendamentoManual(e) {
+async function salvarAgendamentoManual(e) {
   e.preventDefault();
   const pet = document.getElementById('mPetNome').value.trim();
   const raca = document.getElementById('mPetRaca').value.trim();
@@ -676,6 +669,23 @@ function salvarAgendamentoManual(e) {
     origem: 'Balcão / Telefone',
     criadoEm: new Date().toISOString()
   };
+
+  if (LAVAPET_AUTH_STATE.token && LAVAPET_AUTH_STATE.selectedPetshopId) {
+    try {
+      const resposta = await apiFetch('/appointments', {
+        method: 'POST',
+        body: JSON.stringify({
+          petshop_id: LAVAPET_AUTH_STATE.selectedPetshopId,
+          data, hora, pet, tutor, telefone, servico, preco,
+          status: novo.status, origem: novo.origem,
+        }),
+      });
+      novo.id = resposta.appointment.id;
+    } catch (err) {
+      alert(`Não foi possível gravar o agendamento no SaaS: ${err.message}`);
+      return;
+    }
+  }
 
   agendamentosReais.push(novo);
   salvarAgendamentosReais();
@@ -817,11 +827,56 @@ function abrirConfiguracoes() {
   document.getElementById('confTemplateLembrete').value = cfg.templates.lembrete;
   renderizarServicosConfig();
   renderizarBloqueiosConfig();
+  carregarUsuariosDoPetshop();
   document.getElementById('modalConfiguracoes').classList.remove('hidden');
 }
 
 function fecharConfiguracoes() {
   document.getElementById('modalConfiguracoes').classList.add('hidden');
+}
+
+async function carregarUsuariosDoPetshop() {
+  const lista = document.getElementById('listaUsuariosPainel');
+  if (!lista || !LAVAPET_AUTH_STATE.token || !LAVAPET_AUTH_STATE.selectedPetshopId) return;
+  lista.innerHTML = '<p class="text-xs text-slate-500">Carregando usuários...</p>';
+  try {
+    const data = await apiFetch(`/users?petshop_id=${encodeURIComponent(LAVAPET_AUTH_STATE.selectedPetshopId)}`);
+    lista.innerHTML = (data.users || []).map((user) => `
+      <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/50 border border-white/10">
+        <div class="min-w-0">
+          <p class="text-xs font-bold text-slate-800 truncate">${user.name}</p>
+          <p class="text-[11px] text-slate-500 truncate">${user.email}</p>
+        </div>
+        <span class="shrink-0 text-[10px] font-bold uppercase tracking-wide text-[#84364c]">${user.role}</span>
+      </div>
+    `).join('') || '<p class="text-xs text-slate-500">Nenhum usuário cadastrado.</p>';
+  } catch (err) {
+    lista.innerHTML = `<p class="text-xs text-red-500">${err.message}</p>`;
+  }
+}
+
+async function criarUsuarioNoPainel(e) {
+  e.preventDefault();
+  const msg = document.getElementById('msgUsuarios');
+  try {
+    await apiFetch('/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: document.getElementById('novoUsuarioNome').value.trim(),
+        email: document.getElementById('novoUsuarioEmail').value.trim(),
+        password: document.getElementById('novoUsuarioSenha').value,
+        role: document.getElementById('novoUsuarioRole').value,
+        petshop_id: LAVAPET_AUTH_STATE.selectedPetshopId,
+      }),
+    });
+    msg.innerText = 'Usuário cadastrado com sucesso.';
+    msg.className = 'text-xs font-semibold text-emerald-600';
+    document.getElementById('formNovoUsuario').reset();
+    await carregarUsuariosDoPetshop();
+  } catch (err) {
+    msg.innerText = err.message;
+    msg.className = 'text-xs font-semibold text-red-500';
+  }
 }
 
 function renderizarServicosConfig() {
