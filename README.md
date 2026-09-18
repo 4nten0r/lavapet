@@ -74,13 +74,13 @@ npx serve .
 
 Para uma implantação pequena, use uma planilha exclusiva por pet shop e o backend em `apps-script/Code.gs`:
 
-1. Crie uma planilha e copie o ID da URL.
-2. No Apps Script, cole `apps-script/Code.gs` e defina `SHEET_ID`, `SHEET_NAME` e `API_TOKEN` nas propriedades do projeto.
-3. Execute `configurar()` uma vez e implante como aplicativo da Web.
-4. Preencha `api-config.js` com a URL publicada e o mesmo token.
+1. Abra a planilha usada pela instalação e deixe a aba ativa com as colunas `pet`, `servico`, `data` e `hora`.
+2. No Apps Script vinculado à planilha, cole `apps-script/Code.gs`.
+3. Execute `configurar()` uma vez e implante como aplicativo da Web com acesso para qualquer pessoa.
+4. Preencha `api-config.js` com a URL publicada.
 5. Publique os arquivos estáticos na Vercel.
 
-O token do frontend é público. Ele evita gravações acidentais, mas não substitui autenticação server-side; para múltiplos clientes, alta concorrência ou dados sensíveis, migre para banco e API próprios.
+Essa integração é adequada para uma operação pequena e controlada. Para múltiplos clientes, alta concorrência ou dados sensíveis, migre para banco e API próprios.
 
 
 

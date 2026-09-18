@@ -71,11 +71,11 @@ Define as rotas limpas do deploy na Vercel: `/` e `/agendar` abrem o portal, `/a
 
 ### `api-config.js` e `.env.example`
 
-`api-config.js` contém apenas a URL pública e o token da instalação atual. O arquivo `.env.example` documenta os mesmos valores necessários no Apps Script. Como HTML estático não lê variáveis de ambiente sozinho, não coloque segredos reais em `.env` esperando que eles apareçam no navegador; a URL e o token do frontend são informações públicas e servem apenas como controle básico da instalação.
+`api-config.js` contém a URL pública do Apps Script usado pela instalação atual. Como HTML estático não lê variáveis de ambiente sozinho, não coloque segredos reais em `.env` esperando que eles apareçam no navegador.
 
 ### `apps-script/Code.gs`
 
-É o backend opcional para uma planilha por cliente. A função `configurar()` cria a aba `Agendamentos`, `doGet()` lista os horários e `doPost()` grava reservas usando `LockService` para reduzir conflitos simultâneos. O `SHEET_ID`, `SHEET_NAME` e `API_TOKEN` devem ficar nas propriedades do projeto do Apps Script, nunca no HTML.
+É o backend opcional para a planilha existente. A aba ativa usa as colunas `pet`, `servico`, `data` e `hora`; `doGet()` lista as linhas e `doPost()` grava reservas usando `LockService` para reduzir conflitos simultâneos.
 
 ### `README.md`
 
@@ -104,7 +104,7 @@ Documenta funcionalidades, primeiro acesso, execução local, deploy, limitaçõ
 - A sincronização remota usa um endpoint público de Google Apps Script configurado diretamente nos scripts.
 - Os dados locais não são compartilhados automaticamente entre dispositivos; o próprio README registra essa limitação.
 - O arquivo `teste-automatico.html` foi removido intencionalmente e não faz parte deste projeto.
-- Para uma implantação vendável de pequeno porte, configure uma planilha e um Apps Script por pet shop e preencha `api-config.js` com a URL e o token daquela instalação.
+- Para uma implantação vendável de pequeno porte, use a planilha existente e preencha `api-config.js` com a URL publicada do Apps Script.
 - O endpoint legado atualmente usado pela instalação existente retorna apenas data e hora; o painel exibe esses registros como `Agendamento remoto`. Para mostrar pet, tutor, serviço e preço em outros dispositivos, o Apps Script precisa salvar e devolver todas as colunas do agendamento.
 - As telas do portal não dependem de transições de opacidade para ficar interativas; os controles permanecem visíveis mesmo quando o navegador não avança animações CSS.
 - A validação executável recomendada é abrir `preview.html` e `admin.html` por um servidor HTTP local, pois alguns recursos do navegador funcionam de forma diferente quando o HTML é aberto diretamente.

@@ -276,7 +276,7 @@ async function carregarAgendamentosReais() {
         pet: item.pet || local.pet || 'Agendamento remoto',
         tutor: item.tutor || local.tutor || 'Cliente online',
         telefone: item.telefone || local.telefone || '',
-        servico: item.servico || local.servico || 'Serviço não informado',
+        servico: item.servico || item['serviço'] || local.servico || 'Serviço não informado',
         preco: Number(item.preco || local.preco) || 0,
         status: item.status || local.status || 'Confirmado',
         origem: item.origem || local.origem || 'Planilha'
