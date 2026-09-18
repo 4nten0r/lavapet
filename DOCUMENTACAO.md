@@ -105,6 +105,7 @@ Documenta funcionalidades, primeiro acesso, execução local, deploy, limitaçõ
 - Os dados locais não são compartilhados automaticamente entre dispositivos; o próprio README registra essa limitação.
 - O arquivo `teste-automatico.html` foi removido intencionalmente e não faz parte deste projeto.
 - Para uma implantação vendável de pequeno porte, configure uma planilha e um Apps Script por pet shop e preencha `api-config.js` com a URL e o token daquela instalação.
+- O endpoint legado atualmente usado pela instalação existente retorna apenas data e hora; o painel exibe esses registros como `Agendamento remoto`. Para mostrar pet, tutor, serviço e preço em outros dispositivos, o Apps Script precisa salvar e devolver todas as colunas do agendamento.
 - As telas do portal não dependem de transições de opacidade para ficar interativas; os controles permanecem visíveis mesmo quando o navegador não avança animações CSS.
 - A validação executável recomendada é abrir `preview.html` e `admin.html` por um servidor HTTP local, pois alguns recursos do navegador funcionam de forma diferente quando o HTML é aberto diretamente.
 

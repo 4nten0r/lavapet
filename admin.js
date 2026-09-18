@@ -236,12 +236,72 @@ function atualizarBotaoNotificacao(ativo) {
 //   3. GESTÃO DOS AGENDAMENTOS REAIS (SEM MOCKS)
 // ===================================================
 
-function carregarAgendamentosReais() {
-  // Ler os dados gravados genuinamente pelo site ou manualmente pelo gestor
+async function carregarAgendamentosReais() {
   const gravados = localStorage.getItem('lavapet_real_appointments');
-  agendamentosReais = gravados ? JSON.parse(gravados) : [];
+  let locais = [];
+  try {
+    locais = gravados ? JSON.parse(gravados) : [];
+  } catch (e) {
+    locais = [];
+  }
+
+  const apiUrl = obterApiUrl();
+  if (!apiUrl) {
+    agendamentosReais = locais;
+    renderizarListaFiltrada();
+    return;
+  }
+
+  try {
+    const url = new URL(apiUrl);
+    const token = obterApiToken();
+    if (token) url.searchParams.set('token', token);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const resposta = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    const dados = await resposta.json();
+    if (!Array.isArray(dados)) throw new Error('Resposta inválida da agenda remota.');
+
+    agendamentosReais = dados.map((item, indice) => {
+      const data = normalizarDataAgenda(item.data);
+      const hora = normalizarHoraAgenda(item.hora);
+      const local = locais.find(a => a.data === data && a.hora === hora) || {};
+      return {
+        ...item,
+        ...local,
+        id: String(local.id || item.id || item.codigo || `remoto-${indice}`),
+        data,
+        hora,
+        pet: item.pet || local.pet || 'Agendamento remoto',
+        tutor: item.tutor || local.tutor || 'Cliente online',
+        telefone: item.telefone || local.telefone || '',
+        servico: item.servico || local.servico || 'Serviço não informado',
+        preco: Number(item.preco || local.preco) || 0,
+        status: item.status || local.status || 'Confirmado',
+        origem: item.origem || local.origem || 'Planilha'
+      };
+    });
+    localStorage.setItem('lavapet_real_appointments', JSON.stringify(agendamentosReais));
+  } catch (e) {
+    agendamentosReais = locais;
+  }
 
   renderizarListaFiltrada();
+}
+
+function normalizarDataAgenda(valor) {
+  if (!valor) return '';
+  const texto = String(valor);
+  const iso = texto.match(/(\d{4}-\d{2}-\d{2})/);
+  return iso ? iso[1] : texto;
+}
+
+function normalizarHoraAgenda(valor) {
+  if (!valor) return '';
+  const texto = String(valor);
+  const hora = texto.match(/(\d{1,2}:\d{2})/);
+  return hora ? hora[1].padStart(5, '0') : texto;
 }
 
 function salvarAgendamentosReais() {
@@ -316,6 +376,7 @@ function renderizarListaFiltrada() {
       valor: item.preco
     }));
     const linkWhats = `https://api.whatsapp.com/send?phone=55${foneLimpo}&text=${msgWhats}`;
+    const itemId = JSON.stringify(String(item.id));
 
     // Cor do status
     let corBadge = "bg-emerald-500/20 text-[--ok] border-emerald-500/30";
@@ -376,7 +437,7 @@ function renderizarListaFiltrada() {
             <a href="${linkWhats}" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-[--ok] border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 transition-all card-touch">
               <span>WhatsApp</span>
             </a>
-            <button onclick="enviarLembreteWhatsApp(${item.id})" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-white/10 text-xs font-semibold card-touch" title="Enviar lembrete">
+            <button onclick="enviarLembreteWhatsApp(${itemId})" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-white/10 text-xs font-semibold card-touch" title="Enviar lembrete">
               Lembrete
             </button>
           </div>
@@ -384,22 +445,22 @@ function renderizarListaFiltrada() {
           <!-- Ações de Status -->
           <div class="flex items-center gap-1">
             ${item.status !== 'Em Atendimento' && item.status !== 'Concluído' ? `
-              <button onclick="alterarStatus(${item.id}, 'Em Atendimento')" class="px-2.5 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold card-touch" title="Iniciar Banho/Tosa">
+              <button onclick="alterarStatus(${itemId}, 'Em Atendimento')" class="px-2.5 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold card-touch" title="Iniciar Banho/Tosa">
                 Iniciar
               </button>
             ` : ''}
 
             ${item.status !== 'Concluído' ? `
-              <button onclick="alterarStatus(${item.id}, 'Concluído')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 text-xs font-bold card-touch" title="Marcar como Concluído">
+              <button onclick="alterarStatus(${itemId}, 'Concluído')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 text-xs font-bold card-touch" title="Marcar como Concluído">
                 Pronto
               </button>
             ` : `
-              <button onclick="alterarStatus(${item.id}, 'Confirmado')" class="px-2 py-1 text-slate-400 text-[10px] hover:text-slate-200">
+              <button onclick="alterarStatus(${itemId}, 'Confirmado')" class="px-2 py-1 text-slate-400 text-[10px] hover:text-slate-200">
                 Reabrir
               </button>
             `}
 
-            <button onclick="excluirAgendamento(${item.id})" class="p-1.5 text-slate-500 hover:text-[--bad] rounded-lg transition-colors" title="Cancelar Agendamento">
+            <button onclick="excluirAgendamento(${itemId})" class="p-1.5 text-slate-500 hover:text-[--bad] rounded-lg transition-colors" title="Cancelar Agendamento">
               Excluir
             </button>
           </div>
