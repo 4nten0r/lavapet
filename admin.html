@@ -6,13 +6,9 @@
   <title>Lava Pet - Portal do Gestor & Agenda</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="orbit.css">
   <style>
-    :root {
-      --ice: #dceaff;
-      --ok: #2ee6a8;
-      --bad: #ff4d6a;
-      --hub-glow: rgba(46, 230, 168, 0.4);
-    }
+    /* --ice/--ok/--bad, órbita, card-touch, shake, OTP: ver orbit.css */
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -41,49 +37,9 @@
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
     }
 
-    .card-touch {
-      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-    }
-    .card-touch:active {
-      transform: scale(0.98);
-    }
+    /* card-touch unificado em orbit.css */
 
-    /* Animação de Órbita para o Dashboard */
-    .orbit-mini {
-      position: relative;
-      width: 32px;
-      height: 32px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .orbit-mini__ring {
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
-    }
-    .orbit-mini__path {
-      stroke-dasharray: 2 6;
-      stroke-width: 1.5;
-      stroke: var(--ice);
-      fill: none;
-    }
-    .orbit-mini__hub {
-      position: absolute;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--ok);
-      box-shadow: 0 0 8px var(--ok);
-    }
-    .orbit-mini__slot {
-      position: absolute;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: #818cf8;
-      box-shadow: 0 0 6px #818cf8;
-    }
+    /* Orbita usa orbit.css unificado; aqui só o tema wine do painel */
 
     :root {
       --lavapet-wine: #84364c;
@@ -123,6 +79,16 @@
     .bg-slate-800, .bg-slate-800\/80, .bg-slate-900 { background-color: var(--lavapet-rose) !important; }
     .text-slate-200, .text-slate-300 { color: var(--lavapet-ink) !important; }
     .text-slate-950 { color: #fff !important; }
+
+    /* --- Legado escuro -> tema claro vinho (inclui cards gerados via JS) --- */
+    .text-white, .text-slate-50, .text-slate-100 { color: var(--lavapet-ink) !important; }
+    .hover\:text-white:hover, .hover\:text-slate-200:hover, .hover\:text-slate-300:hover { color: var(--lavapet-wine) !important; }
+    .text-slate-400, .text-slate-500 { color: var(--lavapet-muted) !important; }
+    .text-slate-600, .text-slate-700, .text-slate-800, .text-slate-900 { color: var(--lavapet-ink) !important; }
+    [class*="bg-slate-800"], [class*="bg-slate-900"], [class*="bg-slate-950"] { background-color: var(--lavapet-rose) !important; }
+    [class*="hover:bg-slate-700"]:hover, [class*="hover:bg-slate-600"]:hover { background-color: #ead9d6 !important; }
+    [class*="hover:bg-white"]:hover { background-color: rgba(132, 54, 76, .08) !important; }
+    [class*="border-white"] { border-color: var(--lavapet-line) !important; }
     #authScreen { background: linear-gradient(135deg, #fcfaf7, #f2e5e3) !important; }
     #authScreen .glass-panel { border-radius: 20px; }
     #authScreen h1 { color: var(--lavapet-ink) !important; }
@@ -139,20 +105,20 @@
   </style>
 </head>
 
-<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#84364c] selection:text-white">
 
   <!-- ============================================== -->
   <!--        1. TELA DE AUTENTICAÇÃO / LOGIN         -->
   <!-- ============================================== -->
-  <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-[#0d1322] to-slate-950">
+  <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="w-full max-w-md glass-panel p-8 rounded-3xl shadow-2xl relative overflow-hidden border border-white/10">
       
       <!-- Efeito sutil de luz de fundo -->
-      <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -top-24 -left-24 w-48 h-48 rounded-full blur-3xl pointer-events-none" style="background: var(--lavapet-rose);"></div>
+      <div class="absolute -bottom-24 -right-24 w-48 h-48 rounded-full blur-3xl pointer-events-none" style="background: rgba(132,54,76,.12);"></div>
 
       <div class="text-center mb-8 relative z-10">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-3xl shadow-lg shadow-indigo-500/25 mb-4">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl text-3xl mb-4 lp-btn-wine">
           LP
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Portal do Gestor</h1>
@@ -161,35 +127,35 @@
 
       <form id="formLogin" onsubmit="realizarLogin(event)" class="space-y-4 relative z-10">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5 ml-1">E-mail Administrativo</label>
-          <input type="email" id="adminEmail" value="admin@lavapet.com" required placeholder="admin@lavapet.com" 
-                 class="w-full p-3.5 glass-input rounded-2xl outline-none text-sm transition-all">
+          <label class="lp-label" for="adminEmail">E-mail Administrativo</label>
+          <input type="email" id="adminEmail" value="admin@lavapet.com" required placeholder="admin@lavapet.com" autocomplete="username"
+                 class="lp-input">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5 ml-1">Senha de Acesso</label>
+          <label class="lp-label" for="adminSenha">Senha de Acesso</label>
           <div class="relative">
-            <input type="password" id="adminSenha" required placeholder="••••••••" 
-                   class="w-full p-3.5 glass-input rounded-2xl outline-none text-sm pr-12 transition-all">
-            <button type="button" onclick="alternarVisibilidadeSenha()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-xs p-1">
+            <input type="password" id="adminSenha" required placeholder="••••••••" autocomplete="current-password"
+                   class="lp-input" style="padding-right: 3rem;">
+            <button type="button" onclick="alternarVisibilidadeSenha()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-xs p-1" aria-label="Mostrar ou ocultar senha">
               <span id="txtIconEye">ver</span>
             </button>
           </div>
           <p class="text-[11px] text-slate-500 mt-1.5 ml-1">Primeiro acesso? Defina seu e-mail e senha — eles serão o acesso do gestor.</p>
         </div>
 
-        <div id="msgErroLogin" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[--bad] text-xs font-semibold text-center">
+        <div id="msgErroLogin" role="alert" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[--bad] text-xs font-semibold text-center">
           Credenciais incorretas. Verifique e tente novamente.
         </div>
 
-        <button type="submit" id="btnEntrarAdmin" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-2xl text-sm shadow-lg shadow-indigo-600/30 transition-all card-touch flex items-center justify-center gap-2 mt-2">
+        <button type="submit" id="btnEntrarAdmin" class="lp-btn-wine w-full py-4 rounded-2xl text-sm transition-all card-touch flex items-center justify-center gap-2 mt-2">
           <span>Entrar no Painel</span>
-          <span>→</span>
+          <span aria-hidden="true">→</span>
         </button>
       </form>
 
-      <div class="mt-6 pt-6 border-t border-white/5 text-center text-xs text-slate-500">
-        <span>Sistema Seguro com Criptografia SHA-256</span>
+      <div class="mt-6 pt-6 border-t text-center text-xs text-slate-500" style="border-color: var(--lavapet-line);">
+        <span>Sistema Seguro com JWT + bcrypt (backend próprio)</span>
       </div>
     </div>
   </div>
@@ -203,11 +169,18 @@
     <!-- BARRA SUPERIOR (HEADER) -->
     <header class="glass-panel sticky top-0 z-40 border-b border-white/5 px-4 lg:px-8 py-3.5 flex items-center justify-between">
       <div class="flex items-center gap-3">
+        <div class="orbit orbit--mini" aria-hidden="true">
+          <svg class="orbit__ring" viewBox="0 0 100 100">
+            <circle class="orbit__path" cx="50" cy="50" r="42"/>
+          </svg>
+          <span class="orbit__hub"></span>
+          <span class="orbit__slot" id="dashOrbitSlot"></span>
+        </div>
         <span class="text-sm font-black tracking-widest text-[#84364c]">LP</span>
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-base font-extrabold text-white tracking-tight">Lava Pet</h1>
-            <span class="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">PAINEL DO DONO</span>
+            <span class="lp-chip">PAINEL DO DONO</span>
           </div>
           <p class="text-xs text-slate-400 hidden sm:block">Gestão de agendamentos reais em tempo real</p>
         </div>
@@ -222,7 +195,7 @@
         </div>
 
         <!-- Botão de Notificações / Alertas -->
-        <button id="btnAlertaDono" onclick="alternarNotificacoesDono()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-white/10 transition-all card-touch">
+        <button id="btnAlertaDono" onclick="alternarNotificacoesDono()" class="lp-btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs card-touch" aria-pressed="false">
           <span id="iconeSino" aria-hidden="true">!</span>
           <span id="textoAlertaSino" class="hidden sm:inline">Ativar Alertas</span>
         </button>
@@ -231,7 +204,7 @@
         <div class="flex items-center gap-3 pl-2 border-l border-white/10">
           <div id="petshopSelectorWrap" class="w-40"></div>
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-emerald-400 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+            <div class="w-8 h-8 rounded-full lp-btn-wine flex items-center justify-center font-bold text-xs">
               D
             </div>
             <button onclick="realizarLogout()" class="text-slate-400 hover:text-[--bad] p-1.5 rounded-lg hover:bg-white/5 transition-colors card-touch" title="Sair do Painel">
@@ -253,7 +226,7 @@
         <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
           <div class="flex items-center justify-between text-slate-400 mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider">Agendados Hoje</span>
-            <span class="text-lg font-bold text-[#84364c]">01</span>
+            <span class="text-lg font-bold text-[#84364c]" aria-hidden="true">01</span>
           </div>
           <div class="flex items-baseline gap-2">
             <span id="metricaTotal" class="text-2xl lg:text-3xl font-extrabold text-white">0</span>
@@ -264,20 +237,20 @@
         <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
           <div class="flex items-center justify-between text-slate-400 mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider">Faturamento Previsto</span>
-            <span class="text-lg font-bold text-[#84364c]">R$</span>
+            <span class="text-lg font-bold text-[#84364c]" aria-hidden="true">R$</span>
           </div>
           <div class="flex items-baseline gap-2">
-            <span id="metricaReceita" class="text-2xl lg:text-3xl font-extrabold text-[--ok]">R$ 0</span>
+            <span id="metricaReceita" class="text-2xl lg:text-3xl font-extrabold" style="color: #0d7a5f;">R$ 0</span>
           </div>
         </div>
 
         <div class="glass-panel p-4 lg:p-5 rounded-2xl border border-white/5 relative overflow-hidden">
           <div class="flex items-center justify-between text-slate-400 mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider">Concluídos</span>
-            <span class="text-lg font-bold text-[#84364c]">OK</span>
+            <span class="text-lg font-bold text-[#84364c]" aria-hidden="true">OK</span>
           </div>
           <div class="flex items-baseline gap-2">
-            <span id="metricaConcluidos" class="text-2xl lg:text-3xl font-extrabold text-indigo-400">0</span>
+            <span id="metricaConcluidos" class="text-2xl lg:text-3xl font-extrabold" style="color: var(--lavapet-wine);">0</span>
             <span class="text-xs text-slate-400">atendimentos</span>
           </div>
         </div>
@@ -300,14 +273,15 @@
         
         <!-- Seleção de Data & Atalhos -->
         <div class="flex items-center gap-2">
+          <label class="sr-only" for="filtroDataAdmin">Data da agenda</label>
           <input type="date" id="filtroDataAdmin" class="glass-input p-2.5 rounded-xl text-xs font-semibold outline-none cursor-pointer">
-          <button onclick="definirDataFiltroHoje()" class="px-3 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 text-xs font-bold border border-indigo-500/30 card-touch">
+          <button onclick="definirDataFiltroHoje()" class="lp-chip px-3 py-2 card-touch">
             Hoje
           </button>
-          <button onclick="definirDataFiltroAmanha()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/5 card-touch">
+          <button onclick="definirDataFiltroAmanha()" class="lp-btn-ghost px-3 py-2 text-xs card-touch">
             Amanhã
           </button>
-          <button onclick="carregarAgendamentosReais()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 card-touch" title="Sincronizar">
+          <button onclick="carregarAgendamentosReais()" class="lp-btn-ghost p-2.5 card-touch" title="Sincronizar" aria-label="Sincronizar agenda">
             Sincronizar
           </button>
         </div>
@@ -322,13 +296,13 @@
           </div>
 
           <!-- Botão Novo Agendamento Manual Balcão -->
-          <button onclick="abrirModalManual()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs shadow-md shadow-emerald-500/20 card-touch whitespace-nowrap flex items-center gap-1.5">
-            <span>+</span> Novo Agendamento
+          <button onclick="abrirModalManual()" class="lp-btn-wine px-4 py-2.5 text-xs whitespace-nowrap flex items-center gap-1.5 card-touch">
+            <span aria-hidden="true">+</span> Novo Agendamento
           </button>
-          <button onclick="exportarRelatorioCSV()" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/5 card-touch whitespace-nowrap" title="Exportar CSV do dia">
+          <button onclick="exportarRelatorioCSV()" class="lp-btn-ghost px-3 py-2.5 text-xs whitespace-nowrap card-touch" title="Exportar CSV do dia">
             CSV
           </button>
-          <button onclick="abrirConfiguracoes()" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/5 card-touch whitespace-nowrap" title="Configurações da empresa">
+          <button onclick="abrirConfiguracoes()" class="lp-btn-ghost px-3 py-2.5 text-xs whitespace-nowrap card-touch" title="Configurações da empresa">
             Config
           </button>
         </div>
@@ -340,15 +314,15 @@
         <div class="flex items-center justify-between px-1">
           <h2 class="text-sm font-bold text-slate-300 tracking-wide uppercase flex items-center gap-2">
             <span>Fluxo da Agenda Real</span>
-            <span id="badgeContagem" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">0</span>
+            <span id="badgeContagem" class="lp-chip font-mono">0</span>
           </h2>
           
           <!-- Filtro de Status -->
-          <div class="flex items-center gap-1 text-xs">
-            <button onclick="filtrarStatus('todos', this)" class="btn-filtro-status px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-bold card-touch">Todos</button>
-            <button onclick="filtrarStatus('Confirmado', this)" class="btn-filtro-status px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 font-semibold card-touch">Confirmados</button>
-            <button onclick="filtrarStatus('Em Atendimento', this)" class="btn-filtro-status px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 font-semibold card-touch">Em Atendimento</button>
-            <button onclick="filtrarStatus('Concluído', this)" class="btn-filtro-status px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 font-semibold card-touch">Concluídos</button>
+          <div class="flex items-center gap-1 text-xs" role="group" aria-label="Filtrar por status">
+            <button onclick="filtrarStatus('todos', this)" class="btn-filtro-status lp-btn-wine px-2.5 py-1 card-touch" aria-pressed="true">Todos</button>
+            <button onclick="filtrarStatus('Confirmado', this)" class="btn-filtro-status lp-btn-ghost px-2.5 py-1 card-touch" aria-pressed="false">Confirmados</button>
+            <button onclick="filtrarStatus('Em Atendimento', this)" class="btn-filtro-status lp-btn-ghost px-2.5 py-1 card-touch" aria-pressed="false">Em Atendimento</button>
+            <button onclick="filtrarStatus('Concluído', this)" class="btn-filtro-status lp-btn-ghost px-2.5 py-1 card-touch" aria-pressed="false">Concluídos</button>
           </div>
         </div>
 
@@ -359,13 +333,13 @@
 
         <!-- Estado Vazio (Sem Dados Mockados) -->
         <div id="estadoVazio" class="hidden glass-panel p-12 rounded-3xl border border-white/5 text-center my-6">
-          <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 text-3xl flex items-center justify-center mx-auto mb-3">
+          <div class="w-16 h-16 rounded-2xl text-3xl flex items-center justify-center mx-auto mb-3 lp-chip" style="font-size: 10px;">
             Agenda
           </div>
           <h3 class="text-base font-bold text-white">Nenhum agendamento real nesta data</h3>
           <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">Quando os clientes realizarem agendamentos pelo site, eles aparecerão aqui instantaneamente.</p>
           <div class="mt-4 flex items-center justify-center gap-2">
-            <button onclick="abrirModalManual()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 card-touch">
+            <button onclick="abrirModalManual()" class="lp-btn-ghost px-4 py-2 text-xs card-touch">
               Criar Agendamento Manual
             </button>
           </div>
@@ -438,8 +412,8 @@
         </div>
 
         <div class="pt-2 flex items-center justify-end gap-2">
-          <button type="button" onclick="fecharModalManual()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-md card-touch">Gravar Agendamento</button>
+          <button type="button" onclick="fecharModalManual()" class="lp-btn-ghost px-4 py-2.5 text-xs">Cancelar</button>
+          <button type="submit" class="lp-btn-wine px-5 py-2.5 text-xs card-touch">Gravar Agendamento</button>
         </div>
       </form>
     </div>
@@ -492,7 +466,7 @@
       <div>
         <div class="flex items-center justify-between mb-1.5">
           <label class="text-xs font-semibold text-slate-400 ml-1">Serviços</label>
-          <button type="button" onclick="adicionarServicoConfig()" class="text-xs font-bold text-indigo-400 hover:text-white px-2 py-1 rounded-lg card-touch">+ Adicionar</button>
+          <button type="button" onclick="adicionarServicoConfig()" class="text-xs font-bold px-2 py-1 rounded-lg card-touch hover:opacity-80" style="color: var(--lavapet-wine);">+ Adicionar</button>
         </div>
         <div id="listaServicosConfig" class="space-y-2"></div>
       </div>
@@ -502,7 +476,7 @@
         <label class="block text-xs font-semibold text-slate-400 mb-1 ml-1">Bloquear Data (feriados/folgas)</label>
         <div class="flex items-center gap-2">
           <input type="date" id="confBloquearData" class="glass-input p-2.5 rounded-xl text-xs outline-none cursor-pointer flex-1">
-          <button type="button" onclick="bloquearDataConfig()" class="px-3 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold card-touch">Bloquear</button>
+          <button type="button" onclick="bloquearDataConfig()" class="lp-btn-ghost px-3 py-2.5 text-xs card-touch">Bloquear</button>
         </div>
         <div id="listaBloqueiosConfig" class="flex flex-wrap gap-1.5 mt-2"></div>
       </div>
@@ -538,9 +512,9 @@
 
       <!-- Segurança & Dados -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 border-t border-white/5">
-        <button type="button" onclick="exportarBackup()" class="px-3 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold card-touch">Exportar Backup</button>
+        <button type="button" onclick="exportarBackup()" class="lp-btn-ghost px-3 py-2.5 text-xs card-touch">Exportar Backup</button>
         <button type="button" onclick="apagarDadosLGPD()" class="px-3 py-2.5 rounded-xl bg-red-500/10 text-[--bad] text-xs font-semibold border border-red-500/20 card-touch">Apagar Dados (LGPD)</button>
-        <button type="submit" class="px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-md card-touch">Salvar Configurações</button>
+        <button type="submit" class="lp-btn-wine px-3 py-2.5 text-xs card-touch">Salvar Configurações</button>
       </div>
     </form>
 
@@ -553,7 +527,7 @@
       </div>
       <div class="flex items-center justify-between">
         <span id="msgAlterarSenha" class="hidden text-xs font-semibold text-emerald-400"></span>
-        <button type="submit" class="px-3 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold card-touch">Alterar Senha</button>
+        <button type="submit" class="lp-btn-wine px-3 py-2 text-xs card-touch">Alterar Senha</button>
       </div>
     </form>
 
@@ -563,7 +537,7 @@
           <h4 class="text-sm font-bold text-white">Usuários do petshop</h4>
           <p class="text-[11px] text-slate-500">Cadastre gestores e funcionários para o petshop selecionado.</p>
         </div>
-        <button type="button" onclick="carregarUsuariosDoPetshop()" class="px-3 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold card-touch">Atualizar</button>
+        <button type="button" onclick="carregarUsuariosDoPetshop()" class="lp-btn-ghost px-3 py-2 text-xs card-touch">Atualizar</button>
       </div>
       <form id="formNovoUsuario" onsubmit="criarUsuarioNoPainel(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <input type="text" id="novoUsuarioNome" required placeholder="Nome completo" class="glass-input p-3 rounded-xl text-xs outline-none">
@@ -573,7 +547,7 @@
           <option value="funcionario">Funcionário</option>
           <option value="admin_petshop">Administrador do petshop</option>
         </select>
-        <button type="submit" class="sm:col-span-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-md card-touch">Cadastrar Usuário</button>
+        <button type="submit" class="sm:col-span-2 lp-btn-wine px-3 py-2.5 text-xs card-touch">Cadastrar Usuário</button>
       </form>
       <p id="msgUsuarios" class="hidden text-xs font-semibold"></p>
       <div id="listaUsuariosPainel" class="space-y-2"></div>

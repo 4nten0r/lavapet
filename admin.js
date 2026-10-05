@@ -12,7 +12,7 @@ let audioCtx = null;
 //   1. SEGURANÇA & AUTENTICAÇÃO (WEB CRYPTO SHA-256)
 // ===================================================
 
-const LAVAPET_API_BASE = 'http://127.0.0.1:5000/api';
+const LAVAPET_API_BASE = obterSaasBase();
 const LAVAPET_AUTH_STATE = {
   token: null,
   user: null,
@@ -199,7 +199,18 @@ function realizarLogout() {
 function mostrarDashboard() {
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('dashboardScreen').classList.remove('hidden');
-  
+
+  // Órbita do dashboard (mesma linguagem do portal, versão mini)
+  try {
+    const slot = document.getElementById('dashOrbitSlot');
+    if (slot && slot.animate && !slot.getAnimations().length) {
+      slot.animate([
+        { transform: 'rotate(0deg) translate(12px, 0px)' },
+        { transform: 'rotate(360deg) translate(12px, 0px)' }
+      ], { duration: 1600, iterations: Infinity, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' });
+    }
+  } catch (e) {}
+
   // Iniciar relógio e carregar dados reais
   iniciarRelogio();
   carregarAgendamentosReais();
@@ -272,10 +283,12 @@ function atualizarBotaoNotificacao(ativo) {
   const btn = document.getElementById('btnAlertaDono');
   const txt = document.getElementById('textoAlertaSino');
   if (ativo) {
-    btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 text-[--ok] border border-emerald-500/30 transition-all card-touch";
+    btn.className = "lp-btn-wine flex items-center gap-1.5 px-3 py-1.5 text-xs card-touch";
+    btn.setAttribute('aria-pressed', 'true');
     txt.innerText = "Alertas Ativos";
   } else {
-    btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-white/10 transition-all card-touch";
+    btn.className = "lp-btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs card-touch";
+    btn.setAttribute('aria-pressed', 'false');
     txt.innerText = "Ativar Alertas";
   }
 }
@@ -325,12 +338,21 @@ async function carregarAgendamentosReais() {
     return;
   }
 
+  // Fallback legado: planilha Google (só se api-config.js tiver URL).
   try {
     const url = new URL(apiUrl);
     const token = obterApiToken();
     if (token) url.searchParams.set('token', token);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    const dados = await res.json();
+    const lista = Array.isArray(dados) ? dados : (dados.agendamentos || dados.rows || []);
+    agendamentosReais = lista.map((item, indice) => {
+      const local = locais[indice] || {};
+      const data = normalizarDataAgenda(item.data || item.Data || local.data);
+      const hora = normalizarHoraAgenda(item.hora || item.Hora || local.hora);
       return {
         ...item,
         ...local,
@@ -459,17 +481,17 @@ function renderizarListaFiltrada() {
     const linkWhats = `https://api.whatsapp.com/send?phone=55${foneLimpo}&text=${msgWhats}`;
     const itemId = JSON.stringify(String(item.id));
 
-    // Cor do status
-    let corBadge = "bg-emerald-500/20 text-[--ok] border-emerald-500/30";
-    let corBorda = "border-l-[--ok]";
+    // Cor do status (design system: .st-confirm/.st-doing/.st-done)
+    let corBadge = "st st-confirm";
+    let corBorda = "border-l-[#0d7a5f]";
     if (item.status === 'Em Atendimento') {
-      corBadge = "bg-indigo-500/20 text-indigo-300 border-indigo-500/30";
-      corBorda = "border-l-indigo-500";
+      corBadge = "st st-doing";
+      corBorda = "border-l-amber-500";
     } else if (item.status === 'Concluído') {
-      corBadge = "bg-slate-700/50 text-slate-300 border-white/10";
-      corBorda = "border-l-slate-600";
+      corBadge = "st st-done";
+      corBorda = "border-l-[#84364c]";
     } else if (item.status === 'Cancelado') {
-      corBadge = "bg-red-500/20 text-[--bad] border-red-500/30";
+      corBadge = "st";
       corBorda = "border-l-[--bad]";
     }
 
@@ -488,13 +510,13 @@ function renderizarListaFiltrada() {
                 ${item.pet}
                 ${item.raca ? `<span class="text-[10px] font-normal text-slate-400">(${item.raca})</span>` : ''}
               </h4>
-              <p class="text-xs font-semibold text-indigo-400 mt-0.5">
-                ${item.servico} • <span class="text-emerald-400">R$ ${item.preco || 50}</span>
+              <p class="text-xs font-semibold mt-0.5" style="color: var(--lavapet-wine);">
+                ${item.servico} • <span style="color: var(--lavapet-ink); font-weight: 800;">R$ ${item.preco || 50}</span>
               </p>
             </div>
           </div>
 
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${corBadge}">
+          <span class="${corBadge}">
             ${item.status}
           </span>
         </div>
@@ -515,10 +537,10 @@ function renderizarListaFiltrada() {
         <div class="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
           <!-- Botão WhatsApp -->
           <div class="flex items-center gap-1.5">
-            <a href="${linkWhats}" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-[--ok] border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 transition-all card-touch">
+            <a href="${linkWhats}" target="_blank" rel="noopener" class="lp-btn-ghost px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all card-touch">
               <span>WhatsApp</span>
             </a>
-            <button onclick="enviarLembreteWhatsApp(${itemId})" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-white/10 text-xs font-semibold card-touch" title="Enviar lembrete">
+            <button onclick="enviarLembreteWhatsApp(${itemId})" class="lp-chip card-touch" title="Enviar lembrete">
               Lembrete
             </button>
           </div>
@@ -526,13 +548,13 @@ function renderizarListaFiltrada() {
           <!-- Ações de Status -->
           <div class="flex items-center gap-1">
             ${item.status !== 'Em Atendimento' && item.status !== 'Concluído' ? `
-              <button onclick="alterarStatus(${itemId}, 'Em Atendimento')" class="px-2.5 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold card-touch" title="Iniciar Banho/Tosa">
+              <button onclick="alterarStatus(${itemId}, 'Em Atendimento')" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold card-touch lp-chip" title="Iniciar Banho/Tosa">
                 Iniciar
               </button>
             ` : ''}
 
             ${item.status !== 'Concluído' ? `
-              <button onclick="alterarStatus(${itemId}, 'Concluído')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 text-xs font-bold card-touch" title="Marcar como Concluído">
+              <button onclick="alterarStatus(${itemId}, 'Concluído')" class="lp-chip card-touch" title="Marcar como Concluído">
                 Pronto
               </button>
             ` : `
@@ -605,9 +627,15 @@ function definirDataFiltroAmanha() {
 function filtrarStatus(status, botaoEl) {
   statusFiltroAtual = status;
   document.querySelectorAll('.btn-filtro-status').forEach(b => {
-    b.className = "btn-filtro-status px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 font-semibold card-touch";
+    b.classList.remove('lp-btn-wine');
+    b.classList.add('lp-btn-ghost');
+    b.setAttribute('aria-pressed', 'false');
   });
-  botaoEl.className = "btn-filtro-status px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-bold card-touch";
+  if (botaoEl) {
+    botaoEl.classList.remove('lp-btn-ghost');
+    botaoEl.classList.add('lp-btn-wine');
+    botaoEl.setAttribute('aria-pressed', 'true');
+  }
   renderizarListaFiltrada();
 }
 
@@ -1010,11 +1038,14 @@ function exportarBackup() {
   URL.revokeObjectURL(url);
 }
 
-// LGPD: apagar todos os dados locais do navegador
+// LGPD: apagar dados locais do navegador (modo 1 cliente).
+// Os dados oficiais ficam no backend (saas.db); para apagar tudo,
+// exclua ou reinicie o banco no servidor após limpar o navegador.
 function apagarDadosLGPD() {
-  if (!confirm('Isso apagará permanentemente todos os agendamentos, configurações e credenciais deste navegador. Confirmar?')) return;
-  [LAVAPET_AUTH_KEY, LAVAPET_SESSION_KEY, LAVAPET_CONFIG_KEY, LAVAPET_BLOQUEIOS_KEY, 'lavapet_real_appointments']
+  if (!confirm('Isso apagará os dados locais deste navegador (agenda em cache, configuração e sessão). Os dados oficiais no servidor NÃO são apagados aqui. Confirmar?')) return;
+  [LAVAPET_CONFIG_KEY, LAVAPET_BLOQUEIOS_KEY, 'lavapet_real_appointments']
     .forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); });
+  realizarLogout();
   location.reload();
 }
 

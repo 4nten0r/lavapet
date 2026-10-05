@@ -92,7 +92,7 @@ function alternarLuzETema(forcarEstado) {
     
     if (badgeTema) {
       badgeTema.innerText = "Modo claro";
-      badgeTema.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 transition-colors";
+      badgeTema.className = "lp-chip";
     }
   } else {
     // MODO ESCURO
@@ -103,7 +103,7 @@ function alternarLuzETema(forcarEstado) {
     
     if (badgeTema) {
       badgeTema.innerText = "Modo escuro";
-      badgeTema.className = "text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-800 text-indigo-300 border border-slate-700 transition-colors";
+      badgeTema.className = "lp-chip";
     }
   }
 
@@ -207,18 +207,38 @@ function dispararChuvaDeConfetes() {
 
 
 // ===================================================
-//   4. ANIMAÇÃO DE ÓRBITA GEOMÉTRICA (WIND_UP_BRAKE)
+//   4. ÓRBITA UNIFICADA (portal + painel) — WIND_UP_BRAKE
+//   Geometria: origin no hub + rotate() = círculo exato.
+//   Durações padrão: splash 1300ms, botão 900ms, mini 1600ms.
 // ===================================================
-function animarOrbitaSlot(slotElement) {
-  if (!slotElement) return;
-  slotElement.animate([
-    { transform: 'rotate(0deg) translate(21px, 0px)' },
-    { transform: 'rotate(360deg) translate(21px, 0px)' }
+const WIND_UP_BRAKE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+function animarOrbitaSlot(slotElement, { voltas = 360, duracao = 1300, raio = 21 } = {}) {
+  if (!slotElement || !slotElement.animate) return null;
+  try { slotElement.getAnimations().forEach(a => a.cancel()); } catch (e) {}
+  return slotElement.animate([
+    { transform: `rotate(0deg) translate(${raio}px, 0px)` },
+    { transform: `rotate(${voltas}deg) translate(${raio}px, 0px)` }
   ], {
-    duration: 1300,
+    duration: duracao,
     iterations: Infinity,
-    easing: 'cubic-bezier(0.16, 1, 0.3, 1)'
+    easing: WIND_UP_BRAKE
   });
+}
+
+// Lâmpada como STATUS (além do tema): ok / atendimento / erro.
+// Base neutra vinho/creme; --ok/--bad só para veredito.
+function definirStatusLampada(status) {
+  const cord = document.getElementById('lampCord');
+  if (!cord) return;
+  cord.dataset.status = status || '';
+  try {
+    const hub = document.querySelector('#splash .orbit__hub');
+    if (hub) {
+      if (status === 'erro') { hub.style.background = 'var(--bad)'; hub.style.boxShadow = '0 0 12px var(--bad), 0 0 24px var(--bad)'; }
+      else if (status === 'atendimento') { hub.style.background = '#f59e0b'; hub.style.boxShadow = '0 0 12px #f59e0b, 0 0 24px #f59e0b'; }
+      else { hub.style.background = 'var(--ok)'; hub.style.boxShadow = '0 0 12px var(--ok), 0 0 24px var(--ok)'; }
+    }
+  } catch (e) {}
 }
 
 
@@ -246,13 +266,13 @@ function mostrarErro(inputId, msgId, show) {
 
   if (show) {
     msgEl.classList.remove('hidden');
-    inputEl.classList.add('border-[--bad]', 'focus:ring-[--bad]/20', 'shake-error');
-    inputEl.classList.remove('border-slate-200', 'focus:ring-indigo-500/15');
+    inputEl.classList.add('border-[--bad]', 'input-error', 'shake-error');
+    inputEl.classList.remove('border-slate-200');
     setTimeout(() => inputEl.classList.remove('shake-error'), 350);
   } else {
     msgEl.classList.add('hidden');
-    inputEl.classList.remove('border-[--bad]', 'focus:ring-[--bad]/20', 'shake-error');
-    inputEl.classList.add('border-slate-200', 'focus:ring-indigo-500/15');
+    inputEl.classList.remove('border-[--bad]', 'input-error', 'shake-error');
+    inputEl.classList.add('border-slate-200');
   }
 }
 
@@ -299,20 +319,31 @@ function voltarPara(screen) {
 
 function atualizarProgresso(step) {
   const fill = document.getElementById('progressFill');
-  if (!fill) return;
+  if (fill) {
+    if (step === 1) fill.style.width = '0%';
+    if (step === 2) fill.style.width = '50%';
+    if (step === 3) fill.style.width = '100%';
+  }
 
-  if (step === 1) fill.style.width = '0%';
-  if (step === 2) fill.style.width = '50%';
-  if (step === 3) fill.style.width = '100%';
+  // Stepper novo (orbit.css): .lp-step.done / .now
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById(`lpStep${i}`);
+    if (bar) {
+      bar.classList.toggle('done', i < step || (step === 4 && i <= 4));
+      bar.classList.toggle('now', i === step && step < 4);
+    }
+  }
 
   for (let i = 1; i <= 3; i++) {
     const el = document.getElementById(`step${i}`);
     if (el) {
       if (i <= step) {
-        el.classList.add('bg-gradient-to-r', 'from-indigo-600', 'to-violet-600', 'text-white');
+        el.style.background = 'linear-gradient(135deg, var(--lavapet-wine), var(--lavapet-wine-dark))';
+        el.style.color = '#fff';
         el.classList.remove('bg-slate-100', 'text-slate-400');
       } else {
-        el.classList.remove('bg-gradient-to-r', 'from-indigo-600', 'to-violet-600', 'text-white');
+        el.style.background = '';
+        el.style.color = '';
         el.classList.add('bg-slate-100', 'text-slate-400');
       }
     }
@@ -418,12 +449,17 @@ function selecionarServico(nome, preco, elemento) {
   mostrarErro('servicosContainer', 'errPetServico', false);
 
   document.querySelectorAll('.servico-card').forEach(card => {
-    card.classList.remove('border-indigo-600', 'bg-indigo-50/70', 'ring-2', 'ring-indigo-600/30', 'scale-[1.01]');
-    card.classList.add('border-slate-200');
+    card.style.borderColor = '';
+    card.style.boxShadow = '';
+    card.style.transform = '';
+    card.setAttribute('aria-checked', 'false');
+    card.classList.remove('scale-[1.01]');
   });
 
-  elemento.classList.remove('border-slate-200');
-  elemento.classList.add('border-indigo-600', 'bg-indigo-50/70', 'ring-2', 'ring-indigo-600/30', 'scale-[1.01]');
+  elemento.style.borderColor = 'var(--lavapet-wine)';
+  elemento.style.boxShadow = '0 12px 28px rgba(132,54,76,.18), inset 0 0 0 1px rgba(132,54,76,.10)';
+  elemento.classList.add('scale-[1.01]');
+  elemento.setAttribute('aria-checked', 'true');
 }
 
 function salvarPet() {
@@ -499,10 +535,21 @@ function gerarPilulasDias() {
 
     const pilula = document.createElement('button');
     pilula.className = `flex flex-col items-center justify-center min-w-[58px] py-2 px-1.5 rounded-2xl border transition-all text-xs card-touch ${
-      isAtivo 
-        ? 'bg-gradient-to-tr from-indigo-600 to-violet-600 text-white border-transparent shadow-md shadow-indigo-500/25 font-black scale-[1.02]' 
-        : 'border-slate-200 text-slate-700 font-bold hover:border-indigo-300'
+      isAtivo
+        ? 'text-white border-transparent shadow-md font-black scale-[1.02]'
+        : 'text-slate-700 font-bold'
     }`;
+    if (isAtivo) {
+      pilula.style.background = 'linear-gradient(135deg, var(--lavapet-wine), var(--lavapet-wine-dark))';
+      pilula.style.boxShadow = '0 8px 18px rgba(132,54,76,.3)';
+      pilula.style.borderColor = 'transparent';
+    } else {
+      pilula.style.background = '#fff';
+      pilula.style.borderColor = 'var(--lavapet-line)';
+    }
+    pilula.setAttribute('role', 'tab');
+    pilula.setAttribute('aria-selected', isAtivo ? 'true' : 'false');
+    pilula.setAttribute('aria-label', `${nomeSemana}, dia ${diaMes}${isAtivo ? ', selecionado' : ''}`);
     
     pilula.innerHTML = `
       <span class="text-[9px] uppercase tracking-tighter opacity-80">${nomeSemana}</span>
@@ -560,13 +607,21 @@ function gerarHorarios() {
     if ((ocupado || indisponivel) && !isSelecionado) {
       btn.disabled = true;
       btn.innerText = hora;
-      btn.className = "py-2.5 px-2 border rounded-2xl font-bold text-xs bg-slate-100/80 border-slate-200 text-slate-300 line-through cursor-not-allowed opacity-50";
+      btn.className = "slot-btn busy card-touch";
+      btn.setAttribute('aria-disabled', 'true');
     } else if (isSelecionado) {
       btn.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-white"></span> <span>${hora}</span>`;
-      btn.className = "py-2.5 px-2 border rounded-2xl font-black text-xs bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-transparent shadow-md scale-[1.02] flex items-center justify-center gap-1.5 card-touch";
+      btn.className = "slot-btn sel card-touch scale-[1.02] flex items-center justify-center gap-1.5";
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', 'true');
+      btn.setAttribute('aria-label', `Horário ${hora}, selecionado`);
+      btn.onclick = () => selecionarHorario(hora);
     } else {
       btn.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[--ok]"></span> <span>${hora}</span>`;
-      btn.className = "py-2.5 px-2 border rounded-2xl font-bold text-xs border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 flex items-center justify-center gap-1.5 card-touch shadow-sm";
+      btn.className = "slot-btn card-touch flex items-center justify-center gap-1.5";
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', 'false');
+      btn.setAttribute('aria-label', `Horário ${hora}, livre`);
       btn.onclick = () => selecionarHorario(hora);
     }
 
@@ -604,7 +659,8 @@ function atualizarTextoResumo() {
     const partes = (dataSelecionada || getHojeLocalString()).split('-');
     const dataFormatada = partes.length === 3 ? `${partes[2]}/${partes[1]}` : dataSelecionada;
     resumoEl.innerText = `Data: ${dataFormatada} às ${horarioSelecionado}`;
-    resumoEl.className = "font-black text-indigo-600 text-xs flex items-center gap-1";
+    resumoEl.className = "font-black text-xs flex items-center gap-1";
+    resumoEl.style.color = 'var(--lavapet-wine)';
   } else {
     resumoEl.innerText = "Toque em um dos horários livres acima";
     resumoEl.className = "font-bold text-slate-400 text-[11px]";
@@ -624,6 +680,26 @@ async function sincronizarHorariosAssincrono() {
     });
     gerarHorarios();
   } catch (e) {}
+
+  // MODO 1 CLIENTE: horários ocupados vêm do backend próprio.
+  try {
+    const base = obterSaasBase();
+    const dataISO = dataSelecionada || getHojeLocalString();
+    const controllerSaaS = new AbortController();
+    const timeoutSaaS = setTimeout(() => controllerSaaS.abort(), 2500);
+    const res = await fetch(`${base}/public/slots?data=${encodeURIComponent(dataISO)}`, { signal: controllerSaaS.signal });
+    clearTimeout(timeoutSaaS);
+    if (res.ok) {
+      const payload = await res.json();
+      (payload.ocupados || []).forEach(hora => {
+        const itemStr = `${payload.data || dataISO} ${hora}`;
+        if (!horariosOcupados.includes(itemStr)) horariosOcupados.push(itemStr);
+      });
+      gerarHorarios();
+    }
+  } catch (e) {}
+
+  // Fallback legado: Google Sheets (só se configurado).
 
   const apiUrl = obterApiUrl();
   if (!apiUrl) return;
@@ -696,22 +772,61 @@ async function finalizar() {
   const textoOriginal = btnFinalizar.innerHTML;
   
   btnFinalizar.innerHTML = `
-    <div class="orbit scale-50 -my-2 mr-1">
+    <div class="orbit orbit--mini -my-2 mr-1">
       <svg class="orbit__ring" viewBox="0 0 100 100">
-        <circle class="orbit__path" cx="50" cy="50" r="42" style="stroke: #000;"/>
+        <circle class="orbit__path" cx="50" cy="50" r="42"/>
       </svg>
-      <span class="orbit__hub" style="background: #000;"></span>
+      <span class="orbit__hub"></span>
       <span class="orbit__slot" id="orbitBtn"></span>
     </div>
     <span>Garantindo seu horário...</span>
   `;
   btnFinalizar.disabled = true;
-  animarOrbitaSlot(document.getElementById('orbitBtn'));
+  definirStatusLampada('atendimento');
+  animarOrbitaSlot(document.getElementById('orbitBtn'), { duracao: 900, raio: 12 });
 
   try {
     const codigoReserva = "#PET-" + Math.floor(1000 + Math.random() * 9000);
     let nomeFormatadoPet = petDados.nome + (petDados.raca ? ` (${petDados.raca})` : "");
     let nomeCliente = tutorDados.nome + " / " + tutorDados.telefone;
+
+    // MODO 1 CLIENTE: reserva com trava anti-conflito no backend próprio.
+    let codigoFinal = codigoReserva;
+    try {
+      const base = obterSaasBase();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch(`${base}/public/appointments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          pet: petDados.nome,
+          raca: petDados.raca,
+          tutor: tutorDados.nome,
+          telefone: tutorDados.telefone,
+          servico: petDados.servico,
+          preco: petDados.preco || 90,
+          data: dataFinal,
+          hora: horarioSelecionado,
+          codigo: codigoReserva
+        })
+      });
+      clearTimeout(timeoutId);
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        definirStatusLampada('erro');
+        alert(payload.error || 'Este horário acabou de ser ocupado. Escolha outro.');
+        gerarHorarios();
+        return;
+      }
+      if (payload.appointment && payload.appointment.codigo) codigoFinal = payload.appointment.codigo;
+    } catch (e) {
+      // Sem backend alcançável: segue com confirmação local (modo offline).
+      definirStatusLampada('erro');
+    }
+
+    const codigoReservaFinal = codigoFinal;
 
     const apiUrl = obterApiUrl();
     if (apiUrl) fetch(apiUrl, {
@@ -730,7 +845,7 @@ async function finalizar() {
 
     const novoAgendamentoReal = {
       id: Date.now(),
-      codigo: codigoReserva,
+      codigo: codigoReservaFinal,
       pet: petDados.nome,
       raca: petDados.raca || "Não informada",
       tutor: tutorDados.nome,
@@ -755,7 +870,7 @@ async function finalizar() {
     const dataFormatada = `${partes[2]}/${partes[1]}`;
 
     document.getElementById('cPet').innerText = petDados.nome + (petDados.raca ? ` (${petDados.raca})` : '');
-    document.getElementById('cCodigo').innerText = codigoReserva;
+    document.getElementById('cCodigo').innerText = codigoReservaFinal;
     document.getElementById('cServico').innerText = `${petDados.servico} (R$ ${petDados.preco || 90})`;
     document.getElementById('cDataHora').innerText = `${dataFormatada} às ${horarioSelecionado}`;
     
@@ -769,8 +884,8 @@ async function finalizar() {
         boxPix.innerHTML = `
           <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Sinal de reserva (Pix)</p>
           <p class="text-xs text-slate-700 font-semibold">R$ ${sinal} para ${cfg.pix.nome || cfg.nome}</p>
-          <p class="text-[11px] font-mono font-bold text-indigo-600 mt-0.5 break-all">${cfg.pix.chave}</p>
-          <button onclick="copiarChavePix()" class="mt-1.5 text-[10px] font-extrabold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1 rounded-lg transition-colors">Copiar chave</button>`;
+          <p class="text-[11px] font-mono font-bold mt-0.5 break-all" style="color: var(--lavapet-wine);">${cfg.pix.chave}</p>
+          <button onclick="copiarChavePix()" class="lp-btn-wine mt-1.5 text-[10px] px-2.5 py-1">Copiar chave</button>`;
         boxPix.classList.remove('hidden');
       } else {
         boxPix.classList.add('hidden');
@@ -778,12 +893,15 @@ async function finalizar() {
     }
     
     goTo('confirmacao');
+    definirStatusLampada('ok');
+    renderizarOtpCodigo(codigoReservaFinal);
 
     setTimeout(() => {
       dispararChuvaDeConfetes();
     }, 250);
 
   } catch (e) {
+    definirStatusLampada('erro');
     alert("Erro ao confirmar horário. Tente novamente.");
   } finally {
     btnFinalizar.innerHTML = textoOriginal;
@@ -820,7 +938,29 @@ function novoAgendamentoCliente() {
   horarioSelecionado = "";
   document.getElementById('petNome').value = '';
   document.getElementById('petRaca').value = '';
+  definirStatusLampada('');
   goTo('novoPet', 2);
+}
+
+// Slot OTP do código #PET-XXXX (mesma linguagem da órbita).
+// Permite revisar/ditar o código sem sair do ticket.
+function renderizarOtpCodigo(codigo) {
+  const box = document.getElementById('otpCodigoBox');
+  if (!box) return;
+  const digitos = String(codigo || '').replace(/[^A-Za-z0-9]/g, '').slice(-4).padStart(4, '0').split('');
+  box.innerHTML = digitos.map((d, i) =>
+    `<input class="otp-slot" maxlength="1" inputmode="text" autocomplete="one-time-code" data-otp="${i}" value="${d}" aria-label="Dígito ${i + 1} do código">`
+  ).join('');
+  const inputs = [...box.querySelectorAll('[data-otp]')];
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/[^A-Za-z0-9]/g, '').slice(-1);
+      if (inp.value && inputs[i + 1]) inputs[i + 1].focus();
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !inp.value && inputs[i - 1]) inputs[i - 1].focus();
+    });
+  });
 }
 
 // ===================================================
@@ -842,9 +982,9 @@ function renderizarServicosPortal() {
   if (!container) return;
   const iniciais = ['BANHO', 'TOSA', 'COMBO'];
   container.innerHTML = cfg.servicos.map((s, i) => `
-    <div onclick="selecionarServico('${s.nome.replace(/'/g, "\\'")}', ${s.preco}, this)" class="servico-card card-touch p-3.5 border border-slate-200 rounded-2xl bg-white flex items-center justify-between cursor-pointer hover:border-indigo-300 relative overflow-hidden group">
+    <div onclick="selecionarServico('${s.nome.replace(/'/g, "\\'")}', ${s.preco}, this)" role="radio" aria-checked="false" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selecionarServico('${s.nome.replace(/'/g, "\\'")}', ${s.preco}, this)}" class="servico-card card-touch p-3.5 rounded-2xl bg-white flex items-center justify-between cursor-pointer relative overflow-hidden group" style="border: 1px solid var(--lavapet-line);">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-[9px] font-black shadow-inner group-hover:scale-110 transition-transform">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-[9px] font-black shadow-inner group-hover:scale-110 transition-transform" style="background: var(--lavapet-rose); color: var(--lavapet-wine);">
           ${iniciais[i % iniciais.length]}
         </div>
         <div>
@@ -852,18 +992,33 @@ function renderizarServicosPortal() {
           <p class="text-slate-400 text-[10px]">${s.descricao || ''}${s.duracao ? ` - ${s.duracao} min` : ''}</p>
         </div>
       </div>
-      <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100 whitespace-nowrap">R$ ${s.preco}</span>
+      <span class="text-xs font-black px-2.5 py-1 rounded-full whitespace-nowrap lp-chip">R$ ${s.preco}</span>
     </div>`).join('');
 }
 
 
 // ===================================================
-//   11. INICIALIZAÇÃO DA APLICAÇÃO
+//   11. INICIALIZAÇÃO DA APLICAÇÃO (MODO 1 CLIENTE)
+//   Config oficial vem do backend; portal reflete o painel.
 // ===================================================
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   dataSelecionada = getHojeLocalString();
   checarSessao();
   inicializarTema();
+  try {
+    const base = obterSaasBase();
+    const res = await fetch(`${base}/public/config`);
+    if (res.ok) {
+      const payload = await res.json();
+      if (payload && payload.config) {
+        localStorage.setItem(LAVAPET_CONFIG_KEY, JSON.stringify(payload.config));
+      } else if (payload && payload.petshop_name) {
+        const cfg = obterConfig();
+        cfg.nome = payload.petshop_name;
+        salvarConfig(cfg);
+      }
+    }
+  } catch (e) {}
   aplicarIdentidadePortal();
   renderizarServicosPortal();
 

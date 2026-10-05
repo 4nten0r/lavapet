@@ -1,0 +1,149 @@
+/* ===================================================
+   LAVA PET - DESIGN SYSTEM (portal + painel + landing)
+   Tokens: --lavapet-wine/ink/muted/line/cream/rose + --ice/--ok/--bad.
+   Regra: base neutra vinho/creme; --ok/--bad/--ice só p/ veredito.
+   GPU-only: transform/opacity. Durações: 150–250ms micro, 900–1600ms órbita.
+   =================================================== */
+:root {
+  --lavapet-wine: #84364c;
+  --lavapet-wine-dark: #67263a;
+  --lavapet-ink: #382b2d;
+  --lavapet-muted: #756563;
+  --lavapet-line: #e9ded8;
+  --lavapet-cream: #fcfaf7;
+  --lavapet-rose: #f2e5e3;
+  --ice: #dceaff;
+  --ok: #2ee6a8;
+  --bad: #ff4d6a;
+  --lp-radius: 1.1rem;
+  --lp-shadow: 0 12px 30px rgba(92,52,55,.08);
+  --lp-shadow-lg: 0 22px 50px rgba(92,52,55,.14);
+}
+/* Tipografia: títulos Outfit, corpo Plus Jakarta */
+.font-heading { font-family: 'Outfit','Plus Jakarta Sans',sans-serif; }
+/* Superfícies */
+.lp-card {
+  background: rgba(255,255,255,.82);
+  border: 1px solid var(--lavapet-line);
+  border-radius: var(--lp-radius);
+  box-shadow: var(--lp-shadow);
+}
+.lp-chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  background: var(--lavapet-rose); color: var(--lavapet-wine);
+  border: 1px solid rgba(132,54,76,.18);
+  border-radius: 999px; padding: .3rem .7rem;
+  font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+}
+.lp-btn-wine {
+  background: linear-gradient(135deg, var(--lavapet-wine), var(--lavapet-wine-dark));
+  color: #fff; border-radius: 1rem; font-weight: 800;
+  box-shadow: 0 10px 24px rgba(132,54,76,.28);
+}
+.lp-btn-wine:hover { filter: brightness(1.06); }
+.lp-btn-ghost {
+  background: #fff; color: var(--lavapet-wine);
+  border: 1px solid var(--lavapet-line); border-radius: 1rem; font-weight: 800;
+}
+.lp-btn-ghost:hover { border-color: rgba(132,54,76,.4); }
+.lp-input {
+  width: 100%; background: #fffaf7; border: 1px solid var(--lavapet-line);
+  border-radius: .9rem; padding: .8rem 1rem; font-size: .8rem; color: var(--lavapet-ink);
+}
+.lp-input:focus { outline: none; border-color: var(--lavapet-wine); box-shadow: 0 0 0 3px rgba(132,54,76,.14); }
+.lp-input.input-error, .lp-input.input-error:focus { border-color: var(--bad); box-shadow: 0 0 0 3px rgba(255,77,106,.16); }
+.lp-label { display: block; font-size: 11px; font-weight: 700; color: var(--lavapet-muted); margin: 0 0 .35rem .25rem; }
+/* Órbita unificada (geometria por rotate, anel pontilhado proposital) */
+.orbit {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.orbit__ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.orbit__path {
+  stroke-dasharray: 2 8; /* pontilhado de propósito */
+  stroke-width: 1.5;
+  stroke: var(--ice);
+  fill: none;
+}
+.orbit__hub {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 12px var(--ok), 0 0 24px var(--ok);
+}
+.orbit__slot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #818cf8;
+  box-shadow: 0 0 8px #818cf8;
+}
+/* Variante compacta (ex.: dashboard do gestor) */
+.orbit--mini { width: 32px; height: 32px; }
+.orbit--mini .orbit__hub { width: 5px; height: 5px; box-shadow: 0 0 8px var(--ok); }
+.orbit--mini .orbit__slot { width: 5px; height: 5px; box-shadow: 0 0 6px #818cf8; }
+/* Micro-interações GPU-only padronizadas */
+.card-touch { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.card-touch:active { transform: scale(.98); }
+@keyframes micro-shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-5px); }
+  40%, 60% { transform: translateX(5px); }
+}
+.shake-error { animation: micro-shake .32s cubic-bezier(.36,.07,.19,.97) both; }
+.scale-in { animation: micro-pop .25s cubic-bezier(.16,1,.3,1) both; }
+@keyframes micro-pop {
+  from { transform: scale(.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+/* Slot OTP (código #PET-XXXX) — mesma linguagem da órbita */
+.otp-slot {
+  width: 2.6rem; height: 3.2rem;
+  text-align: center; font-weight: 800; font-size: 1.1rem;
+  border-radius: .9rem; border: 1px solid var(--lavapet-line);
+  background: rgba(255,255,255,.9); color: var(--lavapet-ink);
+}
+.otp-slot:focus { outline: none; border-color: var(--lavapet-wine); box-shadow: 0 0 0 3px rgba(132,54,76,.16); }
+/* Stepper / progresso (portal) */
+.lp-steps { display: flex; align-items: center; gap: .4rem; }
+.lp-step { height: 6px; flex: 1; border-radius: 999px; background: var(--lavapet-line); overflow: hidden; position: relative; }
+.lp-step > i { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, var(--lavapet-wine), var(--lavapet-wine-dark)); transform-origin: left center; transform: scaleX(0); transition: transform .35s cubic-bezier(.16,1,.3,1); }
+.lp-step.done > i { transform: scaleX(1); }
+.lp-step.now > i { transform: scaleX(.45); }
+/* Horários (portal) — estados claros Livre/Ocupado/Selecionado */
+.slot-btn {
+  border-radius: .9rem; border: 1px solid var(--lavapet-line); background: #fff;
+  padding: .7rem .5rem; font-size: 11px; font-weight: 800; color: var(--lavapet-ink);
+}
+.slot-btn:hover { border-color: rgba(132,54,76,.45); }
+.slot-btn.sel {
+  background: linear-gradient(135deg, var(--lavapet-wine), var(--lavapet-wine-dark));
+  color: #fff; border-color: transparent; box-shadow: 0 8px 18px rgba(132,54,76,.3);
+}
+.slot-btn.busy { background: #f6f1ee; color: #b7a8a3; text-decoration: line-through; border-style: dashed; }
+/* Status do gestor — pastilhas consistentes */
+.st { display: inline-flex; align-items: center; gap: .3rem; font-size: 10px; font-weight: 800; padding: .25rem .6rem; border-radius: 999px; border: 1px solid transparent; }
+.st-confirm { background: rgba(46,230,168,.14); color: #0d7a5f; border-color: rgba(46,230,168,.35); }
+.st-doing { background: rgba(245,158,11,.14); color: #92580a; border-color: rgba(245,158,11,.35); }
+.st-done { background: rgba(132,54,76,.1); color: var(--lavapet-wine); border-color: rgba(132,54,76,.3); }
+/* Acessibilidade: foco visível e respeito a reduced-motion */
+:focus-visible { outline: 2px solid var(--lavapet-wine); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+/* Mobile: OTP e grade confortáveis em telas pequenas */
+@media (max-width: 380px) {
+  .otp-slot { width: 2.3rem; height: 2.9rem; font-size: 1rem; }
+}

@@ -1,5 +1,5 @@
 // ===================================================
-// LAVA PET - CAMADA DE CONFIGURAÇÃO (MULTIEMPRESA / WHITE-LABEL)
+// LAVA PET - CAMADA DE CONFIGURAÇÃO (1 CLIENTE / SINGLE-TENANT)
 // Gerencia identidade da empresa, serviços, horários, Pix,
 // templates de WhatsApp e bloqueios. Editável pelo gestor.
 // ===================================================
@@ -7,13 +7,25 @@
 const LAVAPET_CONFIG_KEY = 'lavapet_empresa_config';
 const LAVAPET_BLOQUEIOS_KEY = 'lavapet_bloqueios';
 
-// A URL e o token são fornecidos pelo api-config.js de cada instalação.
+// A URL da planilha legada (modo antigo) e a URL do backend SaaS
+// (modo 1 cliente) são fornecidas pelo api-config.js da instalação.
 function obterApiUrl() {
   return String(window.LAVAPET_API_URL || '').trim();
 }
 
 function obterApiToken() {
   return String(window.LAVAPET_API_TOKEN || '').trim();
+}
+
+// Base do backend próprio (Flask server.py). Quando o front é servido
+// pelo próprio Flask (modo 1 cliente), o default '' usa mesma origem.
+// Para Vercel + backend separado, defina window.LAVAPET_SAAS_URL.
+function obterSaasBase() {
+  const base = String(window.LAVAPET_SAAS_URL || '').trim().replace(/\/$/, '');
+  if (base) return `${base}/api`;
+  // Mesma origem: funciona quando server.py serve o front.
+  if (window.location.protocol.startsWith('http')) return `${window.location.origin}/api`;
+  return 'http://127.0.0.1:5000/api';
 }
 
 const CONFIG_PADRAO = {

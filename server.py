@@ -2,14 +2,18 @@ import json
 import os
 import sqlite3
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import bcrypt
 import jwt
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask import Flask, jsonify, request, send_from_directory
+
+try:
+    from flask_cors import CORS
+except ImportError:
+    CORS = None
 
 load_dotenv()
 
@@ -22,8 +26,16 @@ DEFAULT_ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@lavapet.com")
 DEFAULT_ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "123456")
 DEFAULT_PETSHOP_NAME = os.getenv("DEFAULT_PETSHOP_NAME", "Lavapet Demo")
 
-app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+app = Flask(__name__, static_folder=".", static_url_path="")
+if CORS:
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+else:
+    @app.after_request
+    def _cors_fallback(resp):
+        resp.headers.setdefault("Access-Control-Allow-Origin", "*")
+        resp.headers.setdefault("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        resp.headers.setdefault("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        return resp
 
 
 def get_db():
@@ -97,7 +109,7 @@ def init_db():
         petshop_id = str(uuid.uuid4())
         conn.execute(
             "INSERT INTO petshops (id, name, slug, created_at) VALUES (?, ?, ?, ?)",
-            (petshop_id, DEFAULT_PETSHOP_NAME, "lavapet-demo", datetime.utcnow().isoformat()),
+            (petshop_id, DEFAULT_PETSHOP_NAME, "lavapet-demo", datetime.now(timezone.utc).isoformat()),
         )
     else:
         petshop_id = petshop_row["id"]
@@ -118,7 +130,7 @@ def init_db():
                 "super_admin",
                 petshop_id,
                 petshop_id,
-                datetime.utcnow().isoformat(),
+                datetime.now(timezone.utc).isoformat(),
             ),
         )
 
@@ -140,7 +152,7 @@ def create_user_record(name, email, password, role, petshop_id=None):
         INSERT INTO users (id, name, email, password_hash, role, petshop_id, selected_petshop_id, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (user_id, name, email.lower(), password_hash, role, petshop_id, petshop_id, datetime.utcnow().isoformat()),
+        (user_id, name, email.lower(), password_hash, role, petshop_id, petshop_id, datetime.now(timezone.utc).isoformat()),
     )
     conn.commit()
     conn.close()
@@ -184,7 +196,7 @@ def user_has_access(user, petshop_id):
 
 @app.route("/api/health", methods=["GET"])
 def health():
-    return jsonify({"ok": True, "service": "lavapet-saas", "timestamp": datetime.utcnow().isoformat()})
+    return jsonify({"ok": True, "service": "lavapet-saas", "timestamp": datetime.now(timezone.utc).isoformat()})
 
 
 @app.route("/api/auth/login", methods=["POST"])
@@ -221,7 +233,7 @@ def login():
         "sub": user["id"],
         "role": user["role"],
         "selected_petshop_id": selected_petshop_id,
-        "exp": datetime.utcnow() + timedelta(hours=8)
+        "exp": datetime.now(timezone.utc) + timedelta(hours=8)
     }, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
     return jsonify({
@@ -324,7 +336,7 @@ def petshops():
     petshop_id = str(uuid.uuid4())
     conn.execute(
         "INSERT INTO petshops (id, name, slug, created_at) VALUES (?, ?, ?, ?)",
-        (petshop_id, name, slug, datetime.utcnow().isoformat()),
+        (petshop_id, name, slug, datetime.now(timezone.utc).isoformat()),
     )
     conn.commit()
     conn.close()
@@ -453,12 +465,12 @@ def config_endpoint():
     if row:
         conn.execute(
             "UPDATE petshop_settings SET config_json = ?, updated_at = ? WHERE petshop_id = ?",
-            (payload, datetime.utcnow().isoformat(), petshop_id),
+            (payload, datetime.now(timezone.utc).isoformat(), petshop_id),
         )
     else:
         conn.execute(
             "INSERT INTO petshop_settings (id, petshop_id, config_json, updated_at) VALUES (?, ?, ?, ?)",
-            (str(uuid.uuid4()), petshop_id, payload, datetime.utcnow().isoformat()),
+            (str(uuid.uuid4()), petshop_id, payload, datetime.now(timezone.utc).isoformat()),
         )
     conn.commit()
     conn.close()
@@ -513,7 +525,7 @@ def appointments():
             data.get("status") or "Confirmado",
             data.get("origem") or "SaaS",
             data.get("codigo") or f"PET-{appointment_id[:6].upper()}",
-            datetime.utcnow().isoformat(),
+            datetime.now(timezone.utc).isoformat(),
         ),
     )
     conn.commit()
@@ -563,6 +575,132 @@ def appointment_by_id(appointment_id):
 @app.before_request
 def ensure_db_ready():
     init_db()
+
+
+# =====================================================
+# MODO 1 CLIENTE: endpoints públicos do petshop único
+# O portal do cliente (preview.html) usa estes endpoints,
+# sem login e sem Google Sheets. O backend escolhe sozinho
+# o único petshop existente (modo single-tenant).
+# =====================================================
+
+def get_single_petshop_id():
+    conn = get_db()
+    row = conn.execute("SELECT id FROM petshops ORDER BY created_at ASC LIMIT 1").fetchone()
+    conn.close()
+    return row["id"] if row else None
+
+@app.route("/api/public/config", methods=["GET"])
+def public_config():
+    petshop_id = get_single_petshop_id()
+    if not petshop_id:
+        return jsonify({"error": "Nenhum petshop cadastrado."}), 404
+    conn = get_db()
+    row = conn.execute(
+        "SELECT config_json FROM petshop_settings WHERE petshop_id = ?", (petshop_id,)
+    ).fetchone()
+    shop = conn.execute("SELECT name FROM petshops WHERE id = ?", (petshop_id,)).fetchone()
+    conn.close()
+    if row and row["config_json"]:
+        try:
+            return jsonify({"petshop_id": petshop_id, "config": json.loads(row["config_json"])})
+        except Exception:
+            pass
+    return jsonify({"petshop_id": petshop_id, "config": None, "petshop_name": shop["name"] if shop else ""})
+
+
+@app.route("/api/public/slots", methods=["GET"])
+def public_slots():
+    petshop_id = get_single_petshop_id()
+    if not petshop_id:
+        return jsonify({"error": "Nenhum petshop cadastrado."}), 404
+    data = (request.args.get("data") or "").strip()
+    if not data:
+        return jsonify({"error": "Informe ?data=AAAA-MM-DD."}), 400
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT hora FROM appointments WHERE petshop_id = ? AND data = ? AND (status IS NULL OR status != 'Cancelado')",
+        (petshop_id, data),
+    ).fetchall()
+    conn.close()
+    return jsonify({"petshop_id": petshop_id, "data": data, "ocupados": [r["hora"] for r in rows]})
+
+
+@app.route("/api/public/appointments", methods=["POST"])
+def public_create_appointment():
+    petshop_id = get_single_petshop_id()
+    if not petshop_id:
+        return jsonify({"error": "Nenhum petshop cadastrado."}), 404
+    data = request.get_json(silent=True) or {}
+    # Aceita tanto {pet,...} quanto {petNome,...} vindos do portal
+    pet = (data.get("pet") or data.get("petNome") or "").strip()
+    tutor = (data.get("tutor") or data.get("tutorNome") or "").strip()
+    servico = (data.get("servico") or "").strip()
+    dia = (data.get("data") or "").strip()
+    hora = (data.get("hora") or "").strip()
+    telefone = (data.get("telefone") or data.get("tutorTelefone") or "").strip()
+    raca = (data.get("raca") or data.get("petRaca") or "").strip()
+    missing = [k for k, v in {"pet": pet, "tutor": tutor, "servico": servico, "data": dia, "hora": hora}.items() if not v]
+    if missing:
+        return jsonify({"error": "Campos obrigatórios ausentes: " + ", ".join(missing)}), 400
+    conn = get_db()
+    conflito = conn.execute(
+        "SELECT id FROM appointments WHERE petshop_id = ? AND data = ? AND hora = ? AND (status IS NULL OR status != 'Cancelado')",
+        (petshop_id, dia, hora),
+    ).fetchone()
+    if conflito:
+        conn.close()
+        return jsonify({"error": "Horário já reservado."}), 409
+    appointment_id = str(uuid.uuid4())
+    codigo = data.get("codigo") or f"PET-{appointment_id[:6].upper()}"
+    nome_pet = f"{pet} ({raca})" if raca else pet
+    conn.execute(
+        """INSERT INTO appointments (id, petshop_id, data, hora, pet, tutor, telefone, servico, preco, status, origem, codigo, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            appointment_id, petshop_id, dia, hora, nome_pet, tutor, telefone,
+            servico, float(data.get("preco") or 0), "Confirmado", "Site",
+            codigo, datetime.now(timezone.utc).isoformat(),
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "appointment": {"id": appointment_id, "codigo": codigo}}), 201
+
+
+# Servir o front estático pelo mesmo Flask (modo 1 cliente):
+# / -> preview.html, /admin -> admin.html, /sobre -> landing.html
+@app.route("/")
+def _serve_portal():
+    return send_from_directory(BASE_DIR, "preview.html")
+
+
+@app.route("/admin")
+def _serve_admin():
+    return send_from_directory(BASE_DIR, "admin.html")
+
+
+@app.route("/sobre")
+def _serve_sobre():
+    return send_from_directory(BASE_DIR, "landing.html")
+
+
+@app.route("/privacidade")
+def _serve_privacidade():
+    return send_from_directory(BASE_DIR, "privacidade.html")
+
+
+@app.route("/<path:filename>")
+def _serve_static(filename):
+    if filename.startswith("api/"):
+        return jsonify({"error": "Rota não encontrada."}), 404
+    target = (BASE_DIR / filename)
+    if target.is_file():
+        return send_from_directory(BASE_DIR, filename)
+    if filename in ("agendar", "gestor"):
+        fallback = "preview.html" if filename == "agendar" else "admin.html"
+        return send_from_directory(BASE_DIR, fallback)
+    return jsonify({"error": "Rota não encontrada."}), 404
 
 
 if __name__ == "__main__":

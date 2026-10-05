@@ -1,36 +1,50 @@
-# Lava Pet SaaS multi-tenant
+# Lava Pet SaaS — MODO 1 CLIENTE (single-tenant)
 
 ## Objetivo
-Este backend fornece autenticação de usuários, gestão de petshops e seleção de tenant sem depender de `localStorage`.
+Rodar o Lava Pet para **um único petshop**, com portal do cliente e painel
+do gestor falando com o mesmo backend (`server.py`), sem Google Sheets e
+sem complicação multi-tenant no dia a dia. O seletor de petshop continua
+existindo, mas com 1 loja ele seleciona sozinho.
 
-## Variáveis de ambiente
-Crie um arquivo `.env` com:
+## Como executar (seu caso: 1 cliente)
 
-```env
-JWT_SECRET=sua_chave_secreta_muito_segura
-ADMIN_EMAIL=admin@lavapet.com
-ADMIN_PASSWORD=123456
-DEFAULT_PETSHOP_NAME=Lavapet Demo
-APP_PORT=5000
+1. Crie o `.env` a partir do exemplo:
+```bash
+cp .env.example .env
+# edite ADMIN_EMAIL, ADMIN_PASSWORD, DEFAULT_PETSHOP_NAME e JWT_SECRET
 ```
 
-## Como executar
-
-Instale as dependências uma vez:
-
+2. Instale as dependências uma vez:
 ```bash
 python -m pip install flask flask-cors python-dotenv bcrypt pyjwt
 ```
 
-Inicie o backend:
-
+3. Inicie o backend (ele serve o front + a API na mesma porta):
 ```bash
 python server.py
 ```
 
-Em outro terminal, abra `admin.html` no navegador. O backend precisa estar ativo em `http://127.0.0.1:5000`.
+4. Acesse:
+- Portal do cliente: `http://127.0.0.1:5000/`
+- Painel do gestor: `http://127.0.0.1:5000/admin`
+- Sobre: `http://127.0.0.1:5000/sobre`
 
-O primeiro acesso usa os valores de `ADMIN_EMAIL` e `ADMIN_PASSWORD` do `.env`. Depois do login, o gestor pode selecionar o petshop no cabeçalho, configurar a empresa, cadastrar usuários e operar a agenda.
+5. Primeiro acesso: entre no `/admin` com `ADMIN_EMAIL` + `ADMIN_PASSWORD`
+do `.env`. Depois abra **Config** e preencha nome, WhatsApp, horários,
+serviços e Pix. O portal passa a refletir essa configuração
+automaticamente (`GET /api/public/config`).
+
+Não precisa de `python -m http.server` separado nem de planilha. Deixe
+`api-config.js` com `LAVAPET_SAAS_URL = ''` (mesma origem) e
+`LAVAPET_API_URL = ''` (planilha desativada).
+
+## Endpoints usados no modo 1 cliente
+
+### Públicos (portal, sem login)
+- `GET /api/public/config` — configuração oficial da loja.
+- `GET /api/public/slots?data=AAAA-MM-DD` — horários ocupados do dia.
+- `POST /api/public/appointments` — cria reserva com trava anti-conflito
+(409 `Horário já reservado` se duplicar).
 
 ## Endpoints principais
 
